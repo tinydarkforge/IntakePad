@@ -1,4 +1,4 @@
-import { GITHUB_CLIENT_ID } from "@/config"
+import { getClientId } from "@/config"
 
 const AUTH_KEY = "intakepad:github_token"
 
@@ -43,7 +43,7 @@ export async function requestDeviceCode(): Promise<DeviceCodeResponse> {
   const res = await fetch("https://github.com/login/device/code", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ client_id: GITHUB_CLIENT_ID, scope: "public_repo" }),
+    body: JSON.stringify({ client_id: getClientId(), scope: "public_repo" }),
   })
   if (!res.ok) throw new Error("Failed to start device authorization")
   return res.json()
@@ -63,7 +63,7 @@ export async function pollForToken(
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
-        client_id: GITHUB_CLIENT_ID,
+        client_id: getClientId(),
         device_code: deviceCode,
         grant_type: "urn:ietf:params:oauth:grant-type:device_code",
       }),

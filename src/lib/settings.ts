@@ -3,11 +3,13 @@ const SETTINGS_KEY = "intakepad:settings"
 export interface Settings {
   repo: string
   aiEnabled: boolean
+  clientId: string
 }
 
 const defaults: Settings = {
   repo: "",
   aiEnabled: false,
+  clientId: "",
 }
 
 export function loadSettings(): Settings {

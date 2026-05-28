@@ -7,16 +7,18 @@ import { loadSettings, saveSettings } from "@/lib/settings"
 export default function SettingsPage() {
   const [repo, setRepo] = useState("")
   const [aiEnabled, setAiEnabled] = useState(false)
+  const [clientId, setClientId] = useState("")
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     const s = loadSettings()
     setRepo(s.repo)
     setAiEnabled(s.aiEnabled)
+    setClientId(s.clientId)
   }, [])
 
   const handleSave = () => {
-    saveSettings({ repo: repo.trim(), aiEnabled })
+    saveSettings({ repo: repo.trim(), aiEnabled, clientId: clientId.trim() })
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -43,6 +45,21 @@ export default function SettingsPage() {
               aria-label="Repository owner/repo"
             />
             <p className="text-xs text-text-muted mt-1">Format: owner/repo (must be a public repository)</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text mb-1">GitHub OAuth Client ID</label>
+            <input
+              type="text"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              placeholder="Iv23ls..."
+              className="w-full px-3 py-2 text-sm border border-border rounded-md outline-none focus:border-accent font-mono"
+              aria-label="GitHub OAuth Client ID"
+            />
+            <p className="text-xs text-text-muted mt-1">
+              Create an OAuth App at github.com/settings/developers/applications
+            </p>
           </div>
 
           <div className="flex items-center gap-2">

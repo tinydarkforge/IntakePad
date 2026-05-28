@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import Link from "next/link"
 import { TemplateList } from "./TemplateList"
 import { IssueEditor } from "./IssueEditor"
 import { AuthButton } from "./AuthButton"
@@ -23,8 +24,9 @@ export function AppShell() {
   const [repoInput, setRepoInput] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [authed, setAuthed] = useState(false)
+  const [forceEditor, setForceEditor] = useState(false)
 
-  useEffect(() => {
+  const loadSettingsFromStore = useCallback(() => {
     const settings = loadSettings()
     if (settings.repo) {
       setRepo(settings.repo)
@@ -32,6 +34,13 @@ export function AppShell() {
     }
     setAuthed(isAuthenticated())
   }, [])
+
+  useEffect(() => {
+    loadSettingsFromStore()
+    const onFocus = () => loadSettingsFromStore()
+    window.addEventListener("focus", onFocus)
+    return () => window.removeEventListener("focus", onFocus)
+  }, [loadSettingsFromStore])
 
   const handleLoadRepo = useCallback(async (ownerRepo: string) => {
     const parts = ownerRepo.split("/")
@@ -130,6 +139,12 @@ export function AppShell() {
               {sidebarOpen ? "Hide" : "Templates"}
             </button>
           )}
+          <Link
+            href="/settings"
+            className="text-xs text-text-muted hover:text-text transition-colors"
+          >
+            Settings
+          </Link>
           <AuthButton onAuthChange={handleAuthChange} />
         </div>
       </header>
@@ -162,23 +177,36 @@ export function AppShell() {
             <div className="flex-1 flex items-center justify-center">
               <p className="text-sm text-text-muted">Loading templates...</p>
             </div>
-          ) : loadingState.type === "error" ? (
+          ) : loadingState.type === "error" && !forceEditor ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center max-w-xs">
+                <p className="text-sm text-text-secondary">{loadingState.message}</p>
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <button
+                    onClick={() => handleLoadRepo(repo)}
+                    className="text-xs px-3 py-1.5 border border-border rounded-md hover:bg-surface-hover"
+                  >
+                    Retry
+                  </button>
+                  <button
+                    onClick={() => setForceEditor(true)}
+                    className="text-xs px-3 py-1.5 bg-accent text-white rounded-md hover:bg-accent-hover"
+                  >
+                    Write blank issue
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : loadingState.type === "empty" && !forceEditor ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center max-w-xs">
                 <p className="text-sm text-text-secondary">{loadingState.message}</p>
                 <button
-                  onClick={() => handleLoadRepo(repo)}
-                  className="mt-3 text-xs px-3 py-1.5 border border-border rounded-md hover:bg-surface-hover"
+                  onClick={() => setForceEditor(true)}
+                  className="mt-3 text-xs px-3 py-1.5 bg-accent text-white rounded-md hover:bg-accent-hover"
                 >
-                  Retry
+                  Write blank issue
                 </button>
-              </div>
-            </div>
-          ) : loadingState.type === "empty" ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center max-w-xs">
-                <p className="text-sm text-text-secondary">{loadingState.message}</p>
-                <p className="text-xs text-text-muted mt-1">You can still write a blank issue.</p>
               </div>
             </div>
           ) : (

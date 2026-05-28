@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { isAuthenticated, clearToken, getToken, requestDeviceCode, pollForToken, setToken } from "@/lib/auth"
 
 interface AuthButtonProps {
@@ -13,6 +13,8 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
   const [userCode, setUserCode] = useState<string | null>(null)
   const [verificationUri, setVerificationUri] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [waiting, setWaiting] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     setAuthed(isAuthenticated())
@@ -21,24 +23,38 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
   const handleConnect = async () => {
     setConnecting(true)
     setError(null)
+    setWaiting(false)
+    const controller = new AbortController()
+    abortRef.current = controller
     try {
       const { device_code, user_code, verification_uri, interval } = await requestDeviceCode()
       setUserCode(user_code)
       setVerificationUri(verification_uri)
+      setWaiting(true)
 
-      const token = await pollForToken(device_code, interval, () => {})
+      const token = await pollForToken(device_code, interval, () => {}, controller.signal)
       setToken(token)
       setAuthed(true)
       setUserCode(null)
       setVerificationUri(null)
       onAuthChange()
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Connection failed")
+      if (e instanceof DOMException && e.name === "AbortError") {
+        setError(null)
+      } else {
+        setError(e instanceof Error ? e.message : "Connection failed")
+      }
       setUserCode(null)
       setVerificationUri(null)
     } finally {
       setConnecting(false)
+      setWaiting(false)
+      abortRef.current = null
     }
+  }
+
+  const handleCancel = () => {
+    abortRef.current?.abort()
   }
 
   const handleDisconnect = () => {
@@ -49,20 +65,31 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
 
   if (connecting && userCode) {
     return (
-      <div className="text-xs text-text-secondary">
-        Enter code{" "}
-        <span className="font-mono font-bold text-accent px-1 py-0.5 bg-accent/10 rounded">
-          {userCode}
-        </span>{" "}
-        at{" "}
-        <a
-          href={verificationUri ?? "https://github.com/login/device"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline hover:text-accent"
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-text-secondary">
+          Enter code{" "}
+          <span className="font-mono font-bold text-accent px-1 py-0.5 bg-accent/10 rounded">
+            {userCode}
+          </span>{" "}
+          at{" "}
+          <a
+            href={verificationUri ?? "https://github.com/login/device"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-accent"
+          >
+            github.com/login/device
+          </a>
+          {waiting && (
+            <span className="ml-1 animate-pulse">Waiting for authorization&hellip;</span>
+          )}
+        </span>
+        <button
+          onClick={handleCancel}
+          className="text-xs text-text-muted hover:text-red-500 transition-colors"
         >
-          github.com/login/device
-        </a>
+          Cancel
+        </button>
       </div>
     )
   }

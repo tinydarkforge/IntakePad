@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { copyToClipboard, formatTimeAgo } from "@/lib/markdown"
-import { saveDraft, loadDraft } from "@/lib/storage"
+import { saveDraft, loadDraft, removeDraft } from "@/lib/storage"
 import { createIssue } from "@/lib/github"
 import type { Template } from "@/lib/templates"
 
@@ -92,6 +92,7 @@ export function IssueEditor({ template, repo, authed }: IssueEditorProps) {
           </div>
           <button
             onClick={() => {
+              removeDraft(repo, template?.id ?? null)
               setCreatedUrl(null)
               setTitle("")
               setBody("")
@@ -108,33 +109,26 @@ export function IssueEditor({ template, repo, authed }: IssueEditorProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 flex flex-col gap-4 p-6 overflow-auto">
-        {!template ? (
-          <div className="flex items-center justify-center h-full text-center">
-            <div>
-              <p className="text-sm text-text-secondary">Choose a template</p>
-              <p className="text-xs text-text-muted mt-1">or start with a blank issue.</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Short issue title"
-              className="w-full text-lg font-semibold bg-transparent border-none outline-none placeholder:text-text-muted py-1"
-              aria-label="Issue title"
-            />
-
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Paste notes, bug reports, Slack threads, customer feedback, logs, or rough ideas."
-              className="flex-1 w-full bg-transparent border-none outline-none resize-none placeholder:text-text-muted leading-relaxed text-sm"
-              aria-label="Issue body"
-            />
-          </>
+        {!template && (
+          <p className="text-xs text-text-muted">No template selected — writing a blank issue.</p>
         )}
+
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Short issue title"
+          className="w-full text-lg font-semibold bg-transparent border-none outline-none placeholder:text-text-muted py-1"
+          aria-label="Issue title"
+        />
+
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Paste notes, bug reports, Slack threads, customer feedback, logs, or rough ideas."
+          className="flex-1 w-full bg-transparent border-none outline-none resize-none placeholder:text-text-muted leading-relaxed text-sm"
+          aria-label="Issue body"
+        />
 
         {error && (
           <div className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-md border border-red-200">

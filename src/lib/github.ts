@@ -32,10 +32,6 @@ export async function loadTemplates(owner: string, repo: string): Promise<Templa
   const dirUrl = `${GITHUB_API}/repos/${owner}/${repo}/contents/.github/ISSUE_TEMPLATE`
   const res = await fetchApi(dirUrl)
 
-  if (!res.headers.get("content-type")?.includes("application/json")) {
-    return []
-  }
-
   const body = await res.text()
   let items: GitHubContentItem[]
   try {

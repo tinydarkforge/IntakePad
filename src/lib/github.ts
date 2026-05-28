@@ -50,7 +50,10 @@ export async function loadTemplates(owner: string, repo: string): Promise<Templa
 
   for (const file of templateFiles) {
     try {
-      const contentRes = await fetch(file.download_url ?? "")
+      const fileUrl = `${GITHUB_API}/repos/${owner}/${repo}/contents/${file.path}`
+      const contentRes = await fetch(fileUrl, {
+        headers: { Accept: "application/vnd.github.v3.raw", ...getAuthHeaders() },
+      })
       if (!contentRes.ok) continue
       const raw = await contentRes.text()
       const parsed = parseMarkdownTemplate(raw, file.name)

@@ -30,22 +30,15 @@ export function AppShell() {
   const [loadedAt, setLoadedAt] = useState<number | null>(null)
   const [recents, setRecents] = useState<string[]>([])
 
-  const loadSettingsFromStore = useCallback(() => {
-    const settings = loadSettings()
-    if (settings.repo) {
-      setRepo(settings.repo)
-      setRepoInput(settings.repo)
-    }
-    setRecents(loadRecentRepos())
-    setAuthed(isAuthenticated())
-  }, [])
-
   useEffect(() => {
-    loadSettingsFromStore()
-    const onFocus = () => loadSettingsFromStore()
-    window.addEventListener("focus", onFocus)
-    return () => window.removeEventListener("focus", onFocus)
-  }, [loadSettingsFromStore])
+    const refresh = () => {
+      setRecents(loadRecentRepos())
+      setAuthed(isAuthenticated())
+    }
+    refresh()
+    window.addEventListener("focus", refresh)
+    return () => window.removeEventListener("focus", refresh)
+  }, [])
 
   const handleLoadRepo = useCallback(async (ownerRepo: string) => {
     const parts = ownerRepo.split("/")
@@ -76,6 +69,15 @@ export function AppShell() {
       setTemplates([])
     }
   }, [])
+
+  // On mount (incl. returning from Settings), reload templates for the saved repo.
+  useEffect(() => {
+    const saved = loadSettings().repo
+    if (saved) {
+      setRepoInput(saved)
+      handleLoadRepo(saved)
+    }
+  }, [handleLoadRepo])
 
   const handleRepoSubmit = (e: React.FormEvent) => {
     e.preventDefault()

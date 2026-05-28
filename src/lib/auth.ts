@@ -40,10 +40,11 @@ interface AccessTokenResponse {
 }
 
 export async function requestDeviceCode(): Promise<DeviceCodeResponse> {
+  const body = new URLSearchParams({ client_id: getClientId(), scope: "public_repo" })
   const res = await fetch("https://github.com/login/device/code", {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ client_id: getClientId(), scope: "public_repo" }),
+    headers: { Accept: "application/json" },
+    body,
   })
   if (!res.ok) throw new Error("Failed to start device authorization")
   return res.json()
@@ -59,14 +60,15 @@ export async function pollForToken(
     await new Promise((r) => setTimeout(r, interval * 1000))
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError")
     onPoll()
+    const body = new URLSearchParams({
+      client_id: getClientId(),
+      device_code: deviceCode,
+      grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+    })
     const res = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        client_id: getClientId(),
-        device_code: deviceCode,
-        grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-      }),
+      headers: { Accept: "application/json" },
+      body,
     })
     const data: AccessTokenResponse = await res.json()
     if (data.access_token) return data.access_token

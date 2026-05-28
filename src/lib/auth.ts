@@ -53,9 +53,11 @@ export async function pollForToken(
   deviceCode: string,
   interval: number,
   onPoll: () => void,
+  signal?: AbortSignal,
 ): Promise<string> {
-  while (true) {
+  while (!signal?.aborted) {
     await new Promise((r) => setTimeout(r, interval * 1000))
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError")
     onPoll()
     const res = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
@@ -75,6 +77,7 @@ export async function pollForToken(
     }
     throw new Error(data.error_description ?? "Authorization failed")
   }
+  throw new DOMException("Aborted", "AbortError")
 }
 
 export function getAuthHeaders(): Record<string, string> {

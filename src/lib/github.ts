@@ -18,7 +18,7 @@ interface GitHubFileContent extends GitHubContentItem {
 
 async function fetchApi(url: string): Promise<Response> {
   const headers: Record<string, string> = {
-    Accept: "application/vnd.github.v3.raw",
+    Accept: "application/vnd.github.v3+json",
     ...getAuthHeaders(),
   }
   const res = await fetch(url, { headers })

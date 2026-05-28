@@ -2,36 +2,42 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { copyToClipboard, formatTimeAgo } from "@/lib/markdown"
-import { saveDraft, loadDraft, getDraftAge } from "@/lib/storage"
+import { saveDraft, loadDraft } from "@/lib/storage"
+import { createIssue } from "@/lib/github"
 import type { Template } from "@/lib/templates"
 
 interface IssueEditorProps {
   template: Template | null
   repo: string
+  authed: boolean
 }
 
-export function IssueEditor({ template, repo }: IssueEditorProps) {
+export function IssueEditor({ template, repo, authed }: IssueEditorProps) {
   const [title, setTitle] = useState("")
   const [body, setBody] = useState("")
   const [lastSaved, setLastSaved] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [createdUrl, setCreatedUrl] = useState<string | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const currentKey = `${repo}:${template?.id ?? "blank"}`
 
   useEffect(() => {
     const draft = loadDraft(repo, template?.id ?? null)
-    const age = getDraftAge(repo, template?.id ?? null)
     if (draft) {
       setTitle(draft.title)
       setBody(draft.body)
       setLastSaved(draft.updatedAt)
     } else {
-      setTitle(template?.body ? "" : "")
+      setTitle("")
       setBody(template?.body ?? "")
       setLastSaved(null)
     }
-  }, [currentKey])
+    setCreatedUrl(null)
+    setError(null)
+  }, [currentKey, template?.body])
 
   const handleSave = useCallback(() => {
     saveDraft(repo, template?.id ?? null, title, body)
@@ -47,11 +53,7 @@ export function IssueEditor({ template, repo }: IssueEditorProps) {
   }, [title, body, handleSave])
 
   const handleCopy = async () => {
-    const content = template
-      ? `## ${title}\n\n${body}`
-      : title
-        ? `## ${title}\n\n${body}`
-        : body
+    const content = buildContent(title, body)
     const ok = await copyToClipboard(content)
     if (ok) {
       setCopied(true)
@@ -59,16 +61,48 @@ export function IssueEditor({ template, repo }: IssueEditorProps) {
     }
   }
 
-  const handleCreate = () => {
-    const content = template
-      ? `## ${title}\n\n${body}`
-      : title
-        ? `## ${title}\n\n${body}`
-        : body
-    if (repo) {
-      const url = `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(content)}`
-      window.open(url, "_blank")
+  const handleCreate = async () => {
+    setError(null)
+    setCreating(true)
+    const parts = repo.split("/")
+    try {
+      const result = await createIssue(parts[0], parts[1], title, body)
+      setCreatedUrl(result.html_url)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create issue")
+    } finally {
+      setCreating(false)
     }
+  }
+
+  if (createdUrl) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sm text-text-secondary">Issue created</p>
+          <div className="flex items-center gap-2 mt-3 justify-center">
+            <a
+              href={createdUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-accent hover:underline font-medium"
+            >
+              Open in GitHub &rarr;
+            </a>
+          </div>
+          <button
+            onClick={() => {
+              setCreatedUrl(null)
+              setTitle("")
+              setBody("")
+            }}
+            className="mt-4 text-xs text-text-muted hover:text-text transition-colors"
+          >
+            Create another
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -101,6 +135,12 @@ export function IssueEditor({ template, repo }: IssueEditorProps) {
             />
           </>
         )}
+
+        {error && (
+          <div className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-md border border-red-200">
+            {error}
+          </div>
+        )}
       </div>
 
       <div className="border-t border-border px-6 py-3 flex items-center justify-between">
@@ -118,13 +158,22 @@ export function IssueEditor({ template, repo }: IssueEditorProps) {
           </button>
           <button
             onClick={handleCreate}
-            disabled={!title && !body}
+            disabled={!title || !authed || creating}
             className="px-4 py-1.5 text-sm text-white bg-accent rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 font-medium"
           >
-            Create issue
+            {creating ? "Creating..." : "Create issue"}
           </button>
+          {!authed && title && (
+            <p className="text-xs text-text-muted">Connect GitHub to create issues</p>
+          )}
         </div>
       </div>
     </div>
   )
+}
+
+function buildContent(title: string, body: string): string {
+  if (title && body) return `## ${title}\n\n${body}`
+  if (title) return title
+  return body
 }

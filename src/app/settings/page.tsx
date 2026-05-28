@@ -1,11 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { loadSettings, saveSettings } from "@/lib/settings"
 
 export default function SettingsPage() {
-  const [repo, setRepo] = useState("owner/repo")
+  const [repo, setRepo] = useState("")
   const [aiEnabled, setAiEnabled] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    const s = loadSettings()
+    setRepo(s.repo)
+    setAiEnabled(s.aiEnabled)
+  }, [])
+
+  const handleSave = () => {
+    saveSettings({ repo: repo.trim(), aiEnabled })
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
 
   return (
     <div className="h-screen flex flex-col">
@@ -24,10 +38,11 @@ export default function SettingsPage() {
               type="text"
               value={repo}
               onChange={(e) => setRepo(e.target.value)}
+              placeholder="owner/repo"
               className="w-full px-3 py-2 text-sm border border-border rounded-md outline-none focus:border-accent"
               aria-label="Repository owner/repo"
             />
-            <p className="text-xs text-text-muted mt-1">Format: owner/repo</p>
+            <p className="text-xs text-text-muted mt-1">Format: owner/repo (must be a public repository)</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -44,8 +59,18 @@ export default function SettingsPage() {
           </div>
 
           <div className="pt-4 border-t border-border">
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 text-sm text-white bg-accent rounded-md hover:bg-accent-hover transition-colors font-medium"
+            >
+              {saved ? "Saved!" : "Save settings"}
+            </button>
+          </div>
+
+          <div className="pt-4">
             <p className="text-xs text-text-muted">
-              Drafts are saved locally in your browser.
+              Settings and drafts are saved locally in your browser.
+              No data is sent to any server except GitHub.
             </p>
           </div>
         </div>

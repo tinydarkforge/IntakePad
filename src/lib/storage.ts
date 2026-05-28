@@ -33,8 +33,4 @@ export function removeDraft(repo: string, templateId: string | null) {
   localStorage.removeItem(draftKey(repo, templateId))
 }
 
-export function getDraftAge(repo: string, templateId: string | null): number | null {
-  const draft = loadDraft(repo, templateId)
-  if (!draft) return null
-  return Date.now() - draft.updatedAt
-}
+

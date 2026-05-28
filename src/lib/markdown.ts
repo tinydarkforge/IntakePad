@@ -1,14 +1,3 @@
-import type { Template } from "./templates"
-
-export function buildIssueBody(template: Template | null, title: string, body: string): string {
-  if (!template) return body
-  const cleaned = body.trim()
-  if (!cleaned) return template.body
-  const hasTemplateContent = template.body && cleaned !== template.body
-  if (!hasTemplateContent) return cleaned
-  return `## ${title}\n\n${cleaned}`
-}
-
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text)

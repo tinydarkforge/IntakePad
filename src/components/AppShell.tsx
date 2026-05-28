@@ -1,53 +1,87 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { TemplateList } from "./TemplateList"
 import { IssueEditor } from "./IssueEditor"
-import { MOCK_TEMPLATES } from "@/lib/templates"
+import { AuthButton } from "./AuthButton"
+import { loadTemplates } from "@/lib/github"
+import { loadSettings, saveSettings } from "@/lib/settings"
+import { isAuthenticated } from "@/lib/auth"
 import type { Template } from "@/lib/templates"
 
-export function AppShell() {
-  const [repo, setRepo] = useState("owner/repo")
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
-  const [editRepo, setEditRepo] = useState(false)
-  const [repoInput, setRepoInput] = useState(repo)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+interface LoadingState {
+  type: "loading" | "error" | "ready" | "empty"
+  message?: string
+}
 
-  const handleSelectTemplate = useCallback((t: Template) => {
-    setSelectedTemplate(t)
+export function AppShell() {
+  const [repo, setRepo] = useState("")
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
+  const [loadingState, setLoadingState] = useState<LoadingState>({ type: "ready" })
+  const [editRepo, setEditRepo] = useState(false)
+  const [repoInput, setRepoInput] = useState("")
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [authed, setAuthed] = useState(false)
+
+  useEffect(() => {
+    const settings = loadSettings()
+    if (settings.repo) {
+      setRepo(settings.repo)
+      setRepoInput(settings.repo)
+    }
+    setAuthed(isAuthenticated())
+  }, [])
+
+  const handleLoadRepo = useCallback(async (ownerRepo: string) => {
+    const parts = ownerRepo.split("/")
+    if (parts.length !== 2) return
+
+    setRepo(ownerRepo)
+    setLoadingState({ type: "loading" })
+    setSelectedTemplate(null)
+
+    try {
+      const result = await loadTemplates(parts[0], parts[1])
+      if (result.length === 0) {
+        setLoadingState({ type: "empty", message: "No issue templates found in this repository." })
+      } else {
+        setLoadingState({ type: "ready" })
+      }
+      setTemplates(result)
+    } catch (e) {
+      setLoadingState({
+        type: "error",
+        message: e instanceof Error ? e.message : "Failed to load templates",
+      })
+      setTemplates([])
+    }
   }, [])
 
   const handleRepoSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setRepo(repoInput)
+    const trimmed = repoInput.trim()
+    saveSettings({ repo: trimmed, aiEnabled: loadSettings().aiEnabled })
+    handleLoadRepo(trimmed)
     setEditRepo(false)
   }
+
+  const handleSelect = useCallback((t: Template) => {
+    setSelectedTemplate(t)
+  }, [])
+
+  const handleAuthChange = () => {
+    setAuthed(isAuthenticated())
+  }
+
+  const hasRepo = repo.length > 0
 
   return (
     <div className="h-screen flex flex-col">
       <header className="h-12 border-b border-border flex items-center justify-between px-4 bg-white shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-text">IntakePad</span>
-          </div>
-          {editRepo ? (
-            <form onSubmit={handleRepoSubmit} className="flex items-center gap-1">
-              <input
-                type="text"
-                value={repoInput}
-                onChange={(e) => setRepoInput(e.target.value)}
-                className="text-xs px-2 py-1 border border-border rounded outline-none w-40"
-                aria-label="Repository name"
-                autoFocus
-              />
-              <button
-                type="submit"
-                className="text-xs px-2 py-1 bg-accent text-white rounded hover:bg-accent-hover"
-              >
-                Set
-              </button>
-            </form>
-          ) : (
+          <span className="text-sm font-semibold text-text">IntakePad</span>
+          {hasRepo && !editRepo && (
             <button
               onClick={() => {
                 setEditRepo(true)
@@ -58,32 +92,102 @@ export function AppShell() {
               {repo}
             </button>
           )}
+          {editRepo && (
+            <form onSubmit={handleRepoSubmit} className="flex items-center gap-1">
+              <input
+                type="text"
+                value={repoInput}
+                onChange={(e) => setRepoInput(e.target.value)}
+                placeholder="owner/repo"
+                className="text-xs px-2 py-1 border border-border rounded outline-none w-40"
+                aria-label="Repository name"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="text-xs px-2 py-1 bg-accent text-white rounded hover:bg-accent-hover"
+              >
+                Load
+              </button>
+            </form>
+          )}
+          {!hasRepo && !editRepo && (
+            <button
+              onClick={() => setEditRepo(true)}
+              className="text-xs text-text-muted hover:text-text transition-colors"
+            >
+              Select repository
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSidebarOpen((o) => !o)}
-            className="text-xs text-text-muted hover:text-text transition-colors px-2 py-1"
-          >
-            {sidebarOpen ? "Hide templates" : "Show templates"}
-          </button>
-          <span className="text-xs text-text-muted">v0.1</span>
+        <div className="flex items-center gap-3">
+          {hasRepo && (
+            <button
+              onClick={() => setSidebarOpen((o) => !o)}
+              className="text-xs text-text-muted hover:text-text transition-colors"
+            >
+              {sidebarOpen ? "Hide" : "Templates"}
+            </button>
+          )}
+          <AuthButton onAuthChange={handleAuthChange} />
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {sidebarOpen && (
+        {sidebarOpen && hasRepo && (
           <aside className="w-56 border-r border-border bg-white shrink-0 overflow-y-auto">
             <TemplateList
-              templates={MOCK_TEMPLATES}
+              templates={templates}
               selectedId={selectedTemplate?.id ?? null}
-              onSelect={handleSelectTemplate}
+              onSelect={handleSelect}
             />
           </aside>
         )}
 
         <main className="flex-1 flex flex-col bg-white">
-          <IssueEditor template={selectedTemplate} repo={repo} />
+          {!hasRepo ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm text-text-secondary">Choose a repository to load issue templates.</p>
+                <button
+                  onClick={() => setEditRepo(true)}
+                  className="mt-3 text-sm px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover"
+                >
+                  Select repository
+                </button>
+              </div>
+            </div>
+          ) : loadingState.type === "loading" ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm text-text-muted">Loading templates...</p>
+            </div>
+          ) : loadingState.type === "error" ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center max-w-xs">
+                <p className="text-sm text-text-secondary">{loadingState.message}</p>
+                <button
+                  onClick={() => handleLoadRepo(repo)}
+                  className="mt-3 text-xs px-3 py-1.5 border border-border rounded-md hover:bg-surface-hover"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : loadingState.type === "empty" ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center max-w-xs">
+                <p className="text-sm text-text-secondary">{loadingState.message}</p>
+                <p className="text-xs text-text-muted mt-1">You can still write a blank issue.</p>
+              </div>
+            </div>
+          ) : (
+            <IssueEditor
+              template={selectedTemplate}
+              repo={repo}
+              authed={authed}
+            />
+          )}
         </main>
       </div>
     </div>

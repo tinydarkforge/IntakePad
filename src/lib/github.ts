@@ -11,11 +11,6 @@ interface GitHubContentItem {
   download_url: string | null
 }
 
-interface GitHubFileContent extends GitHubContentItem {
-  content: string
-  encoding: string
-}
-
 async function fetchApi(url: string): Promise<Response> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
@@ -71,6 +66,7 @@ export async function createIssue(
   repo: string,
   title: string,
   body: string,
+  labels: string[] = [],
 ): Promise<{ number: number; html_url: string }> {
   const url = `${GITHUB_API}/repos/${owner}/${repo}/issues`
   const headers: Record<string, string> = {
@@ -78,10 +74,12 @@ export async function createIssue(
     "Content-Type": "application/json",
     ...getAuthHeaders(),
   }
+  const payload: { title: string; body: string; labels?: string[] } = { title, body }
+  if (labels.length > 0) payload.labels = labels
   const res = await fetch(url, {
     method: "POST",
     headers,
-    body: JSON.stringify({ title, body }),
+    body: JSON.stringify(payload),
   })
   if (res.status === 401) throw new Error("Authentication required. Connect your GitHub account.")
   if (res.status === 403) throw new Error("You don't have permission to create issues in this repo.")

@@ -27,7 +27,7 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
         <span className="text-xs text-text-muted">GitHub connected</span>
         <button
           onClick={handleDisconnect}
-          className="text-xs text-text-muted hover:text-red-500 transition-colors"
+          className="text-xs text-text-muted hover:text-danger transition-colors"
         >
           Disconnect
         </button>
@@ -38,7 +38,7 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
   return (
     <Link
       href="/settings"
-      className="text-xs px-3 py-1.5 bg-accent text-white rounded-md hover:bg-accent-hover transition-colors"
+      className="text-xs px-3 py-1.5 bg-accent text-accent-fg rounded-md hover:bg-accent-hover transition-colors"
     >
       Connect GitHub
     </Link>

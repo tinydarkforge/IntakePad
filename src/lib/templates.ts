@@ -3,6 +3,7 @@ export interface Template {
   name: string
   about: string
   body: string
+  labels: string[]
 }
 
 interface Frontmatter {
@@ -31,6 +32,15 @@ export function parseFrontmatter(raw: string): { frontmatter: Frontmatter; body:
   return { frontmatter, body }
 }
 
+function parseLabels(raw?: string): string[] {
+  if (!raw) return []
+  return raw
+    .replace(/^\[|\]$/g, "")
+    .split(",")
+    .map((s) => s.trim().replace(/^["']|["']$/g, ""))
+    .filter(Boolean)
+}
+
 export function parseMarkdownTemplate(raw: string, filename: string): Template | null {
   const { frontmatter, body } = parseFrontmatter(raw)
   if (!frontmatter.name) return null
@@ -39,5 +49,6 @@ export function parseMarkdownTemplate(raw: string, filename: string): Template |
     name: frontmatter.name,
     about: frontmatter.about ?? "",
     body,
+    labels: parseLabels(frontmatter.labels),
   }
 }

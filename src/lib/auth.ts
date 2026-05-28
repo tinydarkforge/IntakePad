@@ -1,4 +1,25 @@
 const AUTH_KEY = "intakepad:github_token"
+const AI_KEY = "intakepad:ai_key"
+
+export function getAiKey(): string | null {
+  try {
+    return localStorage.getItem(AI_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function setAiKey(key: string) {
+  try {
+    localStorage.setItem(AI_KEY, key)
+  } catch {}
+}
+
+export function clearAiKey() {
+  try {
+    localStorage.removeItem(AI_KEY)
+  } catch {}
+}
 
 export function getToken(): string | null {
   try {

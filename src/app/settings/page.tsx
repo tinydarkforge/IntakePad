@@ -3,22 +3,24 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { loadSettings, saveSettings } from "@/lib/settings"
+import { getToken, setToken } from "@/lib/auth"
 
 export default function SettingsPage() {
   const [repo, setRepo] = useState("")
   const [aiEnabled, setAiEnabled] = useState(false)
-  const [clientId, setClientId] = useState("")
+  const [pat, setPat] = useState("")
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     const s = loadSettings()
     setRepo(s.repo)
     setAiEnabled(s.aiEnabled)
-    setClientId(s.clientId)
+    setPat(getToken() ?? "")
   }, [])
 
   const handleSave = () => {
-    saveSettings({ repo: repo.trim(), aiEnabled, clientId: clientId.trim() })
+    saveSettings({ repo: repo.trim(), aiEnabled })
+    if (pat.trim()) setToken(pat.trim())
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -48,17 +50,21 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-1">GitHub OAuth Client ID</label>
+            <label className="block text-sm font-medium text-text mb-1">GitHub Personal Access Token</label>
             <input
-              type="text"
-              value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              placeholder="Iv23ls..."
+              type="password"
+              value={pat}
+              onChange={(e) => setPat(e.target.value)}
+              placeholder="github_pat_..."
               className="w-full px-3 py-2 text-sm border border-border rounded-md outline-none focus:border-accent font-mono"
-              aria-label="GitHub OAuth Client ID"
+              aria-label="Personal Access Token"
             />
             <p className="text-xs text-text-muted mt-1">
-              Create an OAuth App at github.com/settings/developers/applications
+              Create a{" "}
+              <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=IntakePad"
+                 target="_blank" rel="noopener noreferrer"
+                 className="underline hover:text-accent">classic PAT</a>{" "}
+              with <code className="text-xs bg-surface-hover px-1 rounded">public_repo</code> scope
             </p>
           </div>
 

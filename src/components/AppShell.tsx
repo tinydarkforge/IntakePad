@@ -70,7 +70,8 @@ export function AppShell() {
   const handleRepoSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = repoInput.trim()
-    saveSettings({ repo: trimmed, aiEnabled: loadSettings().aiEnabled })
+    const current = loadSettings()
+    saveSettings({ repo: trimmed, aiEnabled: current.aiEnabled, clientId: current.clientId })
     handleLoadRepo(trimmed)
     setEditRepo(false)
   }

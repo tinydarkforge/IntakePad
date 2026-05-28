@@ -71,7 +71,7 @@ export function AppShell() {
     e.preventDefault()
     const trimmed = repoInput.trim()
     const current = loadSettings()
-    saveSettings({ repo: trimmed, aiEnabled: current.aiEnabled, clientId: current.clientId })
+    saveSettings({ repo: trimmed, aiEnabled: current.aiEnabled })
     handleLoadRepo(trimmed)
     setEditRepo(false)
   }

@@ -17,7 +17,7 @@ Turn Slack threads, bug reports, meeting notes, and rough ideas into well-struct
 Paste unstructured text, optionally clean it up with AI, review, then create the issue on GitHub or copy the Markdown. It reads a repository's own `.github/ISSUE_TEMPLATE/` files so the output matches how the team already files issues.
 
 - **Templates from the repo** — loads real issue templates via the GitHub API.
-- **AI enhancement (optional, BYO key)** — one click turns messy input into a structured issue. Provider-agnostic: Anthropic or any OpenAI-compatible endpoint.
+- **AI enhancement with provider queue** — configure multiple AI providers. IntakePad tries them in priority order and falls back automatically. Supports local models, free tiers, and cloud providers.
 - **Review before anything ships** — see what the AI changed, what's missing, undo in one click. Nothing is auto-submitted.
 - **Create or copy** — push straight to GitHub, or copy Markdown as a fallback.
 - **Local drafts** — autosaved per repo + template, restored on return.
@@ -56,21 +56,62 @@ Everything is configured in **Settings** (top-right). Nothing is required to bro
 
 ### 2. AI enhancement (optional)
 
-1. Settings → **Enable AI enhancement**
-2. **Provider:** Anthropic, or *OpenAI-compatible* (OpenAI, OpenRouter, Groq, Together, local…)
-3. **Base URL** — leave blank for the provider default
-4. **Model** — e.g. `claude-haiku-4-5` or `gpt-4o-mini`
-5. **API key** → Save
+1. Settings → **AI enhancement**
+2. Enable providers you want to use. Local presets (Ollama, LM Studio) are enabled by default — they work on your machine with no API key.
+3. For cloud providers (Anthropic, OpenAI, OpenRouter, Groq): fill in the API key.
+4. Drag or use ↑/↓ buttons to reorder by priority.
+5. Use **Health check** per provider to verify the endpoint is reachable and CORS allows browser use.
+6. **Save**
+
+> The queue tries each enabled provider in order. If one fails (timeout, rate limit, CORS error, etc.), the next provider is tried automatically.
+
+### Default provider order
+
+| Priority | Provider | Type | Key needed | Note |
+|----------|----------|------|------------|------|
+| 1 | Local (Ollama) | local | No | Privacy-first, works offline |
+| 2 | Local (LM Studio) | local | No | Privacy-first, works offline |
+| 3 | Anthropic | cloud | Yes | |
+| 4 | OpenAI | cloud | Yes | |
+| 5 | OpenRouter | cloud | Yes | Free tier models available |
+| 6 | Groq | cloud | Yes | Free tier available |
 
 ---
 
-## 🔒 Security & privacy
+## Provider queue: how it works
+
+When you click **Enhance**, IntakePad:
+
+1. Walks your enabled providers in order.
+2. Tries the first one with your input.
+3. If it succeeds → applies the result and records which provider was used.
+4. If it fails with a **retryable error** (timeout, rate limit, CORS/network failure, empty response, bad JSON, transient 5xx) → tries the next provider.
+5. If it fails with a **fatal error** (401/403, unsupported shape) → stops immediately with a clear message.
+6. If all providers fail → preserves the original draft and shows a summary of the last error.
+
+The successful provider name is shown in the review bar so you know which backend handled your draft.
+
+---
+
+## Browser CORS limits for local providers
+
+AI providers are called directly from your browser (no backend). This means:
+
+- **Local endpoints** (localhost) must have **CORS enabled**. Ollama and LM Studio both require configuration to allow browser requests:
+  - **Ollama**: set `OLLAMA_ORIGINS=*` or `OLLAMA_ORIGINS=https://tinydarkforge.github.io` environment variable.
+  - **LM Studio**: enable CORS in Settings → Local Server → CORS.
+- **HTTPS pages** calling **HTTP localhost** may be blocked by mixed-content policies. On the GitHub Pages deployment, local providers must use `http://localhost` — which works in most modern browsers but may show a console warning.
+- **Cloud providers** listed in Settings have known CORS support. Custom OpenAI-compatible endpoints may not allow browser CORS — test with the Health check button.
+
+---
+
+## Security & privacy
 
 **Read this before pasting a key.**
 
-IntakePad has **no backend**. Your tokens, AI key, and drafts are stored in your browser's **`localStorage`** and never touch a server we run.
+IntakePad has **no backend**. Your tokens, AI keys, and drafts are stored in your browser's **`localStorage`** and never touch a server we run.
 
-**Not public.** Other visitors to the site cannot see your data — `localStorage` is private to your browser and origin. Keys leave your browser only when *you* act: the AI key goes directly to your chosen provider on **Enhance**; the GitHub PAT goes directly to GitHub on **Load / Create**. Nowhere else.
+**Not public.** Other visitors to the site cannot see your data — `localStorage` is private to your browser and origin. Keys leave your browser only when *you* act: AI keys go directly to your chosen provider on **Enhance**; the GitHub PAT goes directly to GitHub on **Load / Create**. Nowhere else.
 
 **But not a vault.** `localStorage` is **not encrypted or sandboxed** — any JavaScript running on the page can read it. That includes:
 
@@ -86,9 +127,15 @@ IntakePad has **no backend**. Your tokens, AI key, and drafts are stored in your
 - **Revoke** keys when you're done.
 - Don't enter keys on a shared or public machine.
 
-The root cause is the static-site model. A small server-side proxy would keep keys off the client and add rate limiting — tracked in [#15](https://github.com/tinydarkforge/IntakePad/issues/15). Until then, browser-stored BYO keys are the accepted tradeoff.
+**Privacy by provider choice:**
 
-No data is sent anywhere except GitHub and your chosen AI provider. No analytics. No tracking.
+- **Local providers** (Ollama, LM Studio) keep all text on your machine. No data leaves your network.
+- **Cloud providers** (Anthropic, OpenAI, OpenRouter, Groq) receive pasted text directly from your browser. Check each provider's data usage policy.
+- Each provider gets its own API key, stored separately in `localStorage`.
+
+The root cause of the key-storage tradeoff is the static-site model. A small server-side proxy would keep keys off the client and add rate limiting — tracked in [#15](https://github.com/tinydarkforge/IntakePad/issues/15). Until then, browser-stored BYO keys are the accepted tradeoff.
+
+No data is sent anywhere except GitHub and your chosen AI providers. No analytics. No tracking.
 
 ---
 
@@ -97,7 +144,7 @@ No data is sent anywhere except GitHub and your chosen AI provider. No analytics
 1. Enter an `owner/repo` (or **Try copy-only mode**)
 2. Pick a template, or **Blank issue**
 3. Paste your messy notes
-4. **Enhance** (if AI is on) → review changes, missing info, undo if needed
+4. **Enhance** (if AI is on) → review changes, provider info, missing info, undo if needed
 5. **Create issue** or **Copy Markdown**
 
 ### Keyboard shortcuts
@@ -117,22 +164,22 @@ No data is sent anywhere except GitHub and your chosen AI provider. No analytics
 src/
   app/
     page.tsx              — Main screen
-    settings/page.tsx     — Settings (GitHub + AI config + theme)
+    settings/page.tsx     — Settings (GitHub + AI provider queue + theme)
     layout.tsx            — Root layout, fonts, no-flash theme script
     globals.css           — Theme tokens (light/dark), markdown styles
   components/
     AppShell.tsx          — Layout, repo picker, recents, copy-only mode
     TemplateList.tsx      — Template sidebar, refresh, blank entry
-    IssueEditor.tsx       — Title/body, autosave, enhance, preview, create/copy
-    AiReviewBar.tsx       — Post-enhance review: undo / changes / missing info
+    IssueEditor.tsx       — Title/body, autosave, queue-based enhance, preview, create/copy
+    AiReviewBar.tsx       — Post-enhance review: provider name, changes, missing info, undo
     MarkdownPreview.tsx   — marked + DOMPurify rendered preview
     AuthButton.tsx        — Connect/disconnect (PAT)
     ThemeToggle.tsx       — Light/dark toggle
   lib/
-    ai.ts                 — Provider-agnostic enhance (Anthropic + OpenAI shapes)
+    ai.ts                 — Queue runner, per-shape adapters, fallback policy, health checks
     github.ts             — GitHub REST: template loading, issue creation
-    auth.ts               — Token + AI key storage
-    settings.ts           — Settings + recent repos
+    auth.ts               — Per-provider API keys + GitHub token storage
+    settings.ts           — Provider queue, presets, migration from single-provider format
     storage.ts            — Per-repo/template draft persistence
     templates.ts          — Template types, frontmatter parser
     theme.ts              — Theme preference + no-flash init script
@@ -149,7 +196,7 @@ src/
 - **Tailwind CSS v4**
 - **GitHub REST API** (v3) — direct from the browser
 - **marked + DOMPurify** — Markdown preview
-- **localStorage** — drafts, settings, tokens
+- **localStorage** — drafts, settings, tokens, per-provider API keys
 
 No database. No server. No background workers. Zero operational cost.
 
@@ -168,7 +215,7 @@ Pushing to `main` runs the GitHub Actions workflow in `.github/workflows/` that 
 | M0 | Layout, templates, editor, autosave, copy | ✅ Done |
 | M1 | Real GitHub template loading | ✅ Done |
 | M2 | Real issue creation via API | ✅ Done |
-| M3 | Optional AI enhancement | ✅ Done |
+| M3 | AI enhancement with provider queue, fallback, health checks | ✅ Done |
 | M4 | Hardening — tests, rate/size limits, polish | ⏳ Planned ([#6](https://github.com/tinydarkforge/IntakePad/issues/6)) |
 
 ---

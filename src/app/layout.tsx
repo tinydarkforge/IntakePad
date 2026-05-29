@@ -16,12 +16,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IntakePad",
   description: "Messy notes in. Clean GitHub issue out.",
-  icons: {
-    icon: [
-      { url: "/icon.svg", media: "(prefers-color-scheme: light)" },
-      { url: "/icon-dark.svg", media: "(prefers-color-scheme: dark)" },
-    ],
-  },
 }
 
 export default function RootLayout({
@@ -37,6 +31,8 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <link rel="icon" href="/IntakePad/icon.svg" media="(prefers-color-scheme: light)" />
+        <link rel="icon" href="/IntakePad/icon-dark.svg" media="(prefers-color-scheme: dark)" />
       </head>
       <body className="h-full">{children}</body>
     </html>

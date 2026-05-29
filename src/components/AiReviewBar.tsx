@@ -15,33 +15,34 @@ export function AiReviewBar({ missingInfo, changeSummary, providerName, onUndo, 
   const [showChanges, setShowChanges] = useState(false)
 
   return (
-    <div className="rounded-md border border-accent/30 bg-accent-soft overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-3 py-2">
-        <p className="text-xs text-text-secondary flex items-center gap-1.5">
+    <div className="rounded-xl border border-accent/20 bg-accent-soft overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <div className="flex items-center gap-2.5">
           <SparkIcon />
-          AI enhanced this draft with <span className="font-medium text-text">{providerName}</span>.
-          Review before creating.
-        </p>
-        <div className="flex items-center gap-1 shrink-0">
+          <p className="text-xs font-medium text-text-secondary leading-tight">
+            Enhanced with <span className="font-bold text-accent">{providerName}</span>. Review the changes below.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
           {changeSummary.length > 0 && (
             <button
               onClick={() => setShowChanges((s) => !s)}
-              className="text-xs px-2 py-1 rounded text-text-secondary hover:bg-surface-hover transition-colors"
+              className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition-all"
             >
-              {showChanges ? "Hide changes" : "Show changes"}
+              {showChanges ? "Hide details" : "Show details"}
             </button>
           )}
           <button
             onClick={onEnhanceAgain}
             disabled={busy}
-            className="text-xs px-2 py-1 rounded text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-40"
+            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-md text-text-secondary hover:bg-surface-hover transition-all disabled:opacity-40"
           >
-            Enhance again
+            Refine
           </button>
           <button
             onClick={onUndo}
             disabled={busy}
-            className="text-xs px-2 py-1 rounded text-accent hover:bg-surface-hover transition-colors disabled:opacity-40 font-medium"
+            className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-md bg-accent text-accent-fg hover:opacity-90 transition-all disabled:opacity-40 shadow-sm shadow-accent/20"
           >
             Undo
           </button>
@@ -49,22 +50,25 @@ export function AiReviewBar({ missingInfo, changeSummary, providerName, onUndo, 
       </div>
 
       {showChanges && changeSummary.length > 0 && (
-        <ul className="px-3 pb-2.5 pt-0.5 space-y-1 border-t border-accent/20">
-          {changeSummary.map((c, i) => (
-            <li key={i} className="text-xs text-text-secondary flex gap-1.5">
-              <span className="text-text-muted">•</span> {c}
-            </li>
-          ))}
-        </ul>
+        <div className="px-4 pb-4 pt-1 border-t border-accent/10 animate-in fade-in slide-in-from-top-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Improvements</p>
+          <ul className="space-y-1.5">
+            {changeSummary.map((c, i) => (
+              <li key={i} className="text-xs text-text-secondary flex gap-2 leading-relaxed">
+                <span className="text-accent/50 mt-1">•</span> {c}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {missingInfo.length > 0 && (
-        <div className="px-3 pb-2.5 pt-2 border-t border-accent/20">
-          <p className="text-xs font-medium text-text mb-1">Missing information</p>
-          <ul className="space-y-1">
+        <div className="px-4 pb-4 pt-4 border-t border-accent/10 bg-accent-soft/50 animate-in fade-in slide-in-from-top-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-danger-fg mb-2">Needs your attention</p>
+          <ul className="space-y-1.5">
             {missingInfo.map((m, i) => (
-              <li key={i} className="text-xs text-text-secondary flex gap-1.5">
-                <span className="text-text-muted">•</span> {m}
+              <li key={i} className="text-xs text-text-secondary flex gap-2 leading-relaxed">
+                <span className="text-danger-fg/50 mt-1">•</span> {m}
               </li>
             ))}
           </ul>

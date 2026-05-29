@@ -112,13 +112,13 @@ export function AppShell() {
 
   const hasRepo = repo.length > 0
   const showEditor = copyOnly || (hasRepo && (forceEditor || loadingState.type === "ready"))
-  const showSidebar = sidebarOpen && hasRepo && !copyOnly
 
   return (
     <div className="h-screen flex flex-col bg-bg">
-      <header className="h-12 border-b border-border flex items-center justify-between px-4 bg-panel shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-text">IntakePad</span>
+      <header className="h-14 border-b border-border flex items-center justify-between px-6 bg-panel shrink-0 z-10">
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-bold tracking-tight text-accent">IntakePad</span>
+          <div className="h-4 w-px bg-border"></div>
 
           {copyOnly ? (
             <span className="text-xs text-text-muted px-2 py-1 rounded-md bg-surface-hover">Copy-only mode</span>
@@ -130,22 +130,22 @@ export function AppShell() {
                 onChange={(e) => setRepoInput(e.target.value)}
                 onBlur={() => setTimeout(() => setEditRepo(false), 150)}
                 placeholder="owner/repo"
-                className="text-xs px-2 py-1 bg-panel border border-border rounded outline-none focus:border-accent w-44"
+                className="text-xs px-3 py-1.5 bg-panel border border-border rounded-md outline-none focus:border-accent w-48 transition-all"
                 aria-label="Repository name"
                 autoFocus
               />
-              <button type="submit" className="text-xs px-2 py-1 bg-accent text-accent-fg rounded hover:bg-accent-hover">
+              <button type="submit" className="text-xs px-3 py-1.5 bg-accent text-accent-fg rounded-md hover:bg-accent-hover font-semibold">
                 Load
               </button>
               {recents.length > 0 && (
-                <div className="absolute top-full left-0 mt-1 w-44 bg-panel border border-border rounded-md shadow-md py-1 z-10">
-                  <p className="px-2 py-1 text-[10px] uppercase tracking-wider text-text-muted">Recent</p>
+                <div className="absolute top-full left-0 mt-2 w-48 bg-panel border border-border rounded-lg shadow-lg py-1.5 z-20">
+                  <p className="px-3 py-1 text-[10px] uppercase font-bold tracking-wider text-text-muted">Recent</p>
                   {recents.map((r) => (
                     <button
                       key={r}
                       type="button"
                       onMouseDown={() => pickRecent(r)}
-                      className="block w-full text-left px-2 py-1 text-xs text-text-secondary hover:bg-surface-hover truncate"
+                      className="block w-full text-left px-3 py-1.5 text-xs text-text-secondary hover:bg-surface-hover truncate"
                     >
                       {r}
                     </button>
@@ -156,7 +156,7 @@ export function AppShell() {
           ) : hasRepo ? (
             <button
               onClick={() => { setEditRepo(true); setRepoInput(repo) }}
-              className="flex items-center gap-1 text-xs text-text-muted hover:text-text transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-text transition-colors"
             >
               {repo}
               <ChevronDown />
@@ -164,19 +164,19 @@ export function AppShell() {
           ) : (
             <button
               onClick={() => setEditRepo(true)}
-              className="text-xs text-text-muted hover:text-text transition-colors"
+              className="text-xs font-medium text-text-muted hover:text-text transition-colors"
             >
               Select repository
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {hasRepo && !copyOnly && (
+        <div className="flex items-center gap-4">
+          {!sidebarOpen && hasRepo && !copyOnly && (
             <button
-              onClick={() => setSidebarOpen((o) => !o)}
-              className="flex items-center justify-center w-7 h-7 rounded-md text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
-              title={showSidebar ? "Close sidebar" : "Open sidebar"}
+              onClick={() => setSidebarOpen(true)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
+              title="Open sidebar"
             >
               <SidebarIcon />
             </button>
@@ -184,7 +184,7 @@ export function AppShell() {
           {copyOnly && (
             <button
               onClick={() => setCopyOnly(false)}
-              className="text-xs text-text-muted hover:text-text transition-colors"
+              className="text-xs font-semibold text-text-muted hover:text-text transition-colors"
             >
               Exit copy-only
             </button>
@@ -194,8 +194,12 @@ export function AppShell() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {showSidebar && (
-          <aside className="w-60 border-r border-border bg-panel shrink-0 flex flex-col">
+        {hasRepo && !copyOnly && (
+          <aside 
+            className={`border-r border-border bg-sidebar shrink-0 flex flex-col transition-all duration-300 ease-in-out ${
+              sidebarOpen ? "w-64" : "w-0 opacity-0 pointer-events-none"
+            }`}
+          >
             <TemplateList
               templates={templates}
               selectedId={selectedTemplate?.id ?? null}
@@ -208,26 +212,37 @@ export function AppShell() {
             />
 
             {/* Bottom blade */}
-            <div className="border-t border-border shrink-0">
-              <button
-                onClick={() => setBladeOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-4 py-2 text-xs text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
-              >
-                <span className="font-medium tracking-wider uppercase">Settings</span>
-                <ChevronDown className={`transition-transform ${bladeOpen ? "rotate-180" : ""}`} />
-              </button>
-              {bladeOpen && (
-                <div className="px-4 pb-3 pt-1 flex items-center gap-3">
-                  <ThemeToggle />
-                  <Link
-                    href="/settings"
-                    className="flex items-center justify-center w-7 h-7 rounded-md text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
-                    title="Open settings"
+            <div className="border-t border-border shrink-0 p-3 bg-sidebar/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setBladeOpen((o) => !o)}
+                    className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
+                    title="Settings"
                   >
                     <GearIcon />
-                  </Link>
+                  </button>
+                  {bladeOpen && (
+                    <div className="flex items-center gap-2 px-1 animate-in fade-in slide-in-from-left-2 duration-200">
+                      <ThemeToggle />
+                      <Link
+                        href="/settings"
+                        className="p-1.5 rounded-md text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
+                        title="Advanced Settings"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+                      </Link>
+                    </div>
+                  )}
                 </div>
-              )}
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
+                  title="Collapse sidebar"
+                >
+                  <SidebarIcon />
+                </button>
+              </div>
             </div>
           </aside>
         )}
@@ -266,15 +281,21 @@ export function AppShell() {
 
 function FirstRun({ onSelectRepo, onCopyOnly }: { onSelectRepo: () => void; onCopyOnly: () => void }) {
   return (
-    <div className="flex-1 flex items-center justify-center p-6">
-      <div className="text-center max-w-sm">
-        <h1 className="text-base font-semibold text-text">Create better GitHub issues from messy notes.</h1>
-        <p className="text-sm text-text-secondary mt-2">Choose a repository to load its issue templates, or start without one.</p>
-        <div className="flex items-center justify-center gap-2 mt-5">
-          <button onClick={onSelectRepo} className="text-sm px-4 py-2 bg-accent text-accent-fg rounded-md hover:bg-accent-hover font-medium">
+    <div className="flex-1 flex items-center justify-center p-8 bg-bg/50">
+      <div className="text-center max-w-md">
+        <h1 className="text-2xl font-bold tracking-tight text-text leading-tight">Create better GitHub issues <br/> from messy notes.</h1>
+        <p className="text-sm font-medium text-text-secondary mt-4 leading-relaxed">Choose a repository to load its issue templates, <br/> or start drafting without one.</p>
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <button 
+            onClick={onSelectRepo} 
+            className="text-sm font-bold px-6 py-2.5 bg-accent text-accent-fg rounded-full hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+          >
             Select repository
           </button>
-          <button onClick={onCopyOnly} className="text-sm px-4 py-2 border border-border rounded-md hover:bg-surface-hover text-text-secondary">
+          <button 
+            onClick={onCopyOnly} 
+            className="text-sm font-bold px-6 py-2.5 border border-border rounded-full hover:bg-surface-hover text-text-secondary transition-all"
+          >
             Try copy-only mode
           </button>
         </div>
@@ -285,8 +306,8 @@ function FirstRun({ onSelectRepo, onCopyOnly }: { onSelectRepo: () => void; onCo
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 flex items-center justify-center p-6">
-      <div className="text-center max-w-xs">{children}</div>
+    <div className="flex-1 flex items-center justify-center p-8 bg-bg/50">
+      <div className="text-center max-w-sm">{children}</div>
     </div>
   )
 }

@@ -6,8 +6,9 @@ import { copyToClipboard, formatTimeAgo } from "@/lib/markdown"
 import { saveDraft, loadDraft, removeDraft } from "@/lib/storage"
 import { createIssue } from "@/lib/github"
 import { loadSettings } from "@/lib/settings"
-import { getProviderKey } from "@/lib/auth"
+import { getProviderKey, getToken } from "@/lib/auth"
 import { enhanceWithQueue } from "@/lib/ai"
+import { uploadImage } from "@/lib/uploads"
 import type { QueueProvider } from "@/lib/ai"
 import { useNow } from "@/lib/useNow"
 import { AiReviewBar } from "./AiReviewBar"
@@ -42,6 +43,8 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
   const [enhanceError, setEnhanceError] = useState<string | null>(null)
   const [review, setReview] = useState<Review | null>(null)
   const [aiState, setAiState] = useState<AiState>("off")
+  const [uploadingImages, setUploadingImages] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const snapshot = useRef<{ title: string; body: string } | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const now = useNow()
@@ -174,6 +177,61 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
     setReview(null)
   }, [])
 
+  const handleImagePaste = useCallback(async (e: React.ClipboardEvent) => {
+    const files = Array.from(e.clipboardData.files).filter((f) => f.type.startsWith("image/"))
+    if (files.length === 0) return
+
+    e.preventDefault()
+
+    if (!repo) {
+      setError("Set a repository in Settings to paste images.")
+      return
+    }
+    const token = getToken()
+    if (!token) {
+      setError("Add a GitHub token in Settings to upload images.")
+      return
+    }
+
+    setUploadingImages(true)
+    setError(null)
+    const parts = repo.split("/")
+    const markdowns: string[] = []
+    const errs: string[] = []
+
+    for (const file of files) {
+      try {
+        const result = await uploadImage(parts[0], parts[1], file, token)
+        markdowns.push(`\n![${result.filename}](${result.url})`)
+      } catch (e) {
+        errs.push(e instanceof Error ? e.message : "Failed to upload image")
+      }
+    }
+
+    if (markdowns.length > 0) {
+      const insert = markdowns.join("")
+      const ta = textareaRef.current
+      if (ta) {
+        const start = ta.selectionStart
+        const end = ta.selectionEnd
+        const next = body.slice(0, start) + insert + body.slice(end)
+        setBody(next)
+        requestAnimationFrame(() => {
+          ta.selectionStart = ta.selectionEnd = start + insert.length
+          ta.focus()
+        })
+      } else {
+        setBody((prev) => prev + insert)
+      }
+    }
+
+    if (errs.length > 0 && markdowns.length === 0) {
+      setError(errs.join(". "))
+    }
+
+    setUploadingImages(false)
+  }, [repo, body])
+
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -276,10 +334,12 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
 
         {view === "edit" ? (
           <div className="relative flex-1 flex">
-            <textarea
+              <textarea
+              ref={textareaRef}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Paste notes, bug reports, Slack threads, customer feedback, logs, or rough ideas."
+              onPaste={handleImagePaste}
+              placeholder="Paste notes, bug reports, Slack threads, customer feedback, logs, or rough ideas. You can also paste screenshots."
               disabled={enhancing}
               className="flex-1 w-full bg-transparent border-none outline-none resize-none placeholder:text-text-muted leading-relaxed text-sm disabled:opacity-60"
               aria-label="Issue body"
@@ -296,6 +356,12 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
         ) : (
           <div className="flex-1 overflow-auto">
             <MarkdownPreview content={buildContent(title, body)} />
+          </div>
+        )}
+
+        {uploadingImages && (
+          <div className="text-xs text-text-secondary bg-surface-hover px-3 py-2 rounded-md border border-border flex items-center gap-2">
+            <span>Uploading images to repository…</span>
           </div>
         )}
 

@@ -52,7 +52,7 @@ export function TemplateList({
             <button
               key={t.id}
               onClick={() => onSelect(t)}
-              className={`w-full text-left px-3 py-2.5 rounded-lg transition-all ${
+              className={`w-full text-left px-3 py-2.5 rounded-md transition-all ${
                 selectedId === t.id
                   ? "bg-panel shadow-sm ring-1 ring-border text-accent"
                   : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/5"
@@ -68,7 +68,7 @@ export function TemplateList({
 
         <button
           onClick={onSelectBlank}
-          className={`w-full text-left px-3 py-2.5 rounded-lg transition-all ${
+          className={`w-full text-left px-3 py-2.5 rounded-md transition-all ${
             blankActive && selectedId === null
               ? "bg-panel shadow-sm ring-1 ring-border text-accent"
               : "text-text-secondary hover:bg-black/5 dark:hover:bg-white/5"

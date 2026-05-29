@@ -15,7 +15,7 @@ export function AiReviewBar({ missingInfo, changeSummary, providerName, onUndo, 
   const [showChanges, setShowChanges] = useState(false)
 
   return (
-    <div className="rounded-xl border border-accent/20 bg-accent-soft overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="rounded-lg border border-accent/20 bg-accent-soft overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="flex items-center justify-between gap-4 px-4 py-3">
         <div className="flex items-center gap-2.5">
           <SparkIcon />

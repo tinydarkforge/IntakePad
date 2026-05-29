@@ -38,7 +38,7 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
   return (
     <Link
       href="/settings"
-      className="text-xs font-bold px-4 py-2 bg-accent text-accent-fg rounded-full hover:opacity-90 transition-all shadow-sm shadow-accent/20"
+      className="text-xs font-bold px-4 py-2 bg-accent text-accent-fg rounded-lg hover:opacity-90 transition-all shadow-sm shadow-accent/20"
     >
       Sign in
     </Link>

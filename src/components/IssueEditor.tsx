@@ -318,10 +318,10 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             {copyOnly
               ? "Drafting: Copy-only mode"
               : template
-                ? <><span>Drafting: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors" aria-label="Restore original template body">Reset</button></>
+                ? <><span>Drafting: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors" aria-label="Restore original template body">Reset</button><button onClick={() => setBody("")} className="underline hover:text-text transition-colors ml-2" aria-label="Clear body">Clear</button></>
                 : "Drafting: Blank issue"}
           </p>
-          <div className="flex items-center gap-0.5 rounded-lg border border-border p-1 bg-bg shadow-sm">
+          <div className="flex items-center gap-0.5 rounded-md border border-border p-1 bg-bg shadow-sm">
             <ViewTab active={view === "edit"} onClick={() => setView("edit")}>Edit</ViewTab>
             <ViewTab active={view === "preview"} onClick={() => setView("preview")}>Preview</ViewTab>
           </div>
@@ -366,7 +366,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
               {body.length.toLocaleString()} / {BODY_MAX.toLocaleString()}
             </div>
             {enhancing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-panel/60 backdrop-blur-[1px] rounded-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-panel/60 backdrop-blur-[1px] rounded-md">
                 <div className="flex flex-col items-center gap-3 text-sm font-medium text-text-secondary">
                   <Spinner />
                   Improving issue draft…
@@ -375,27 +375,27 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             )}
           </div>
         ) : (
-          <div className="flex-1 overflow-auto bg-bg/50 rounded-xl border border-border/50 p-6">
+          <div className="flex-1 overflow-auto bg-bg/50 rounded-lg border border-border/50 p-6">
             <MarkdownPreview content={buildContent(title, body)} />
           </div>
         )}
 
         {uploadingImages && (
-          <div className="text-xs font-medium text-text-secondary bg-surface-hover px-4 py-3 rounded-lg border border-border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+          <div className="text-xs font-medium text-text-secondary bg-surface-hover px-4 py-3 rounded-md border border-border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
             <Spinner />
             <span>Uploading images to repository…</span>
           </div>
         )}
 
         {enhanceError && (
-          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-lg border border-danger-border flex items-center justify-between gap-3 animate-in shake">
+          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-md border border-danger-border flex items-center justify-between gap-3 shake">
             <span>AI enhancement failed. {enhanceError}</span>
             <button onClick={handleEnhance} className="font-bold underline shrink-0 hover:opacity-80">Retry</button>
           </div>
         )}
 
         {error && (
-          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-lg border border-danger-border">
+          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-md border border-danger-border">
             {error}
             {!copyOnly && (
               <button onClick={handleCopy} className="font-bold underline ml-2 hover:opacity-80">Copy Markdown instead</button>
@@ -405,8 +405,28 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
       </div>
 
       <div className="h-16 border-t border-border px-10 py-3 flex items-center justify-between gap-3 bg-panel/50 backdrop-blur-md shrink-0">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
-          {lastSaved ? `Auto-saved ${formatTimeAgo(now - lastSaved)}` : "Not saved"}
+        <div className="flex items-center gap-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
+            {lastSaved ? `Auto-saved ${formatTimeAgo(now - lastSaved)}` : "Not saved"}
+          </div>
+          {(title || body) && (
+            <button
+              onClick={() => {
+                removeDraft(repo, template?.id ?? null)
+                setTitle("")
+                setBody("")
+                setReview(null)
+                setError(null)
+                setEnhanceError(null)
+                setCopied(false)
+                snapshot.current = null
+                setLastSaved(null)
+              }}
+              className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-danger transition-colors"
+            >
+              Reset
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -414,7 +434,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             <button
               onClick={handleEnhance}
               disabled={enhancing || !body.trim()}
-              className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-lg hover:bg-surface-hover transition-all disabled:opacity-40 flex items-center gap-2 shadow-sm"
+              className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-md hover:bg-surface-hover transition-all disabled:opacity-40 flex items-center gap-2 shadow-sm"
               title="Enhance (⌘E)"
             >
               <SparkIcon />
@@ -424,7 +444,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           {aiState === "setup" && (
             <Link
               href="/settings"
-              className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-lg hover:bg-surface-hover transition-all shadow-sm"
+              className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-md hover:bg-surface-hover transition-all shadow-sm"
             >
               Set up AI
             </Link>
@@ -433,7 +453,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           <button
             onClick={handleCopy}
             disabled={!title && !body}
-            className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-lg hover:bg-surface-hover transition-all disabled:opacity-40 shadow-sm"
+            className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-md hover:bg-surface-hover transition-all disabled:opacity-40 shadow-sm"
             title="Copy Markdown (⌘⇧C)"
           >
             {copied ? "Copied!" : "Copy Markdown"}
@@ -443,11 +463,14 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             <button
               onClick={handleCreate}
               disabled={!canCreate}
-              className="px-6 py-2 text-xs font-bold text-accent-fg bg-accent rounded-lg hover:opacity-90 transition-all disabled:opacity-40 shadow-lg shadow-accent/10"
+              className="px-6 py-2 text-xs font-bold text-accent-fg bg-accent rounded-md hover:opacity-90 transition-all disabled:opacity-40 shadow-lg shadow-accent/10"
               title="Create issue (⌘↵)"
             >
               {creating ? "Creating…" : "Create Issue"}
             </button>
+          )}
+          {!copyOnly && !authed && title && (
+            <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Add a token in Settings to create</p>
           )}
         </div>
       </div>

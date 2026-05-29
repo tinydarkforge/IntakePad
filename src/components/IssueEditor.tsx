@@ -15,6 +15,9 @@ import { AiReviewBar } from "./AiReviewBar"
 import { MarkdownPreview } from "./MarkdownPreview"
 import type { Template } from "@/lib/templates"
 
+const TITLE_MAX = 200
+const BODY_MAX = 50000
+
 interface IssueEditorProps {
   template: Template | null
   repo: string
@@ -118,6 +121,12 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
   const handleCreate = useCallback(async () => {
     if (!title || !authed || creating || copyOnly) return
     setError(null)
+
+    if (body.length > BODY_MAX) {
+      setError(`Body exceeds ${BODY_MAX.toLocaleString()} characters (${body.length.toLocaleString()}). Trim before creating.`)
+      return
+    }
+
     setCreating(true)
     const parts = repo.split("/")
     try {
@@ -211,17 +220,24 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
     if (markdowns.length > 0) {
       const insert = markdowns.join("")
       const ta = textareaRef.current
+      let next: string
       if (ta) {
         const start = ta.selectionStart
         const end = ta.selectionEnd
-        const next = body.slice(0, start) + insert + body.slice(end)
-        setBody(next)
-        requestAnimationFrame(() => {
-          ta.selectionStart = ta.selectionEnd = start + insert.length
-          ta.focus()
-        })
+        next = body.slice(0, start) + insert + body.slice(end)
       } else {
-        setBody((prev) => prev + insert)
+        next = body + insert
+      }
+      if (next.length > BODY_MAX) {
+        errs.push(`Result would exceed ${BODY_MAX.toLocaleString()} character limit`)
+      } else {
+        setBody(next)
+        if (ta) {
+          requestAnimationFrame(() => {
+            ta.selectionStart = ta.selectionEnd = (ta?.selectionStart ?? 0) + insert.length
+            ta.focus()
+          })
+        }
       }
     }
 
@@ -302,7 +318,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             {copyOnly
               ? "Copy-only mode — write or paste, then copy the Markdown."
               : template
-                ? <><span>Template: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors">OG</button><button onClick={() => setBody("")} className="underline hover:text-text transition-colors">Clear</button></>
+                ? <><span>Template: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors" aria-label="Restore original template body">OG</button><button onClick={() => setBody("")} className="underline hover:text-text transition-colors" aria-label="Clear body">Clear</button></>
                 : "Blank issue"}
           </p>
           <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5 bg-panel">
@@ -317,6 +333,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Short issue title"
           disabled={enhancing}
+          maxLength={TITLE_MAX}
           className="w-full text-lg font-semibold bg-transparent border-none outline-none placeholder:text-text-muted py-1 disabled:opacity-60"
           aria-label="Issue title"
         />
@@ -333,17 +350,21 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
         )}
 
         {view === "edit" ? (
-          <div className="relative flex-1 flex">
-              <textarea
+          <div className="relative flex-1 flex flex-col">
+            <textarea
               ref={textareaRef}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onPaste={handleImagePaste}
               placeholder="Paste notes, bug reports, Slack threads, customer feedback, logs, or rough ideas. You can also paste screenshots."
               disabled={enhancing}
+              maxLength={BODY_MAX}
               className="flex-1 w-full bg-transparent border-none outline-none resize-none placeholder:text-text-muted leading-relaxed text-sm disabled:opacity-60"
               aria-label="Issue body"
             />
+            <div className={`text-right text-[10px] pt-0.5 ${body.length > BODY_MAX * 0.95 ? "text-danger-fg" : "text-text-muted"}`}>
+              {body.length.toLocaleString()}/{BODY_MAX.toLocaleString()}
+            </div>
             {enhancing && (
               <div className="absolute inset-0 flex items-center justify-center bg-panel/60 backdrop-blur-[1px]">
                 <div className="flex items-center gap-2 text-sm text-text-secondary">

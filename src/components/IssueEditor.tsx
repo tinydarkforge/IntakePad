@@ -298,11 +298,11 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
     <div className="flex flex-col h-full">
       <div className="flex-1 flex flex-col gap-3 px-6 pt-5 pb-3 overflow-auto">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-text-muted">
+          <p className="text-xs text-text-muted flex items-center gap-2">
             {copyOnly
               ? "Copy-only mode — write or paste, then copy the Markdown."
               : template
-                ? `Template: ${template.name}`
+                ? <><span>Template: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors">OG</button><button onClick={() => setBody("")} className="underline hover:text-text transition-colors">Clear</button></>
                 : "Blank issue"}
           </p>
           <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5 bg-panel">

@@ -117,7 +117,7 @@ export function AppShell() {
     <div className="h-screen flex flex-col bg-bg">
       <header className="h-14 border-b border-border flex items-center justify-between px-6 bg-panel shrink-0 z-10">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-bold tracking-tight text-accent">IntakePad</span>
+          <span className="text-sm font-bold tracking-tight text-accent flex items-center gap-2"><IntakePadIcon />IntakePad</span>
           <div className="h-4 w-px bg-border"></div>
 
           {copyOnly ? (
@@ -210,7 +210,7 @@ export function AppShell() {
                 <div className={`flex items-center gap-1 ${sidebarOpen ? "" : "hidden"}`}>
                   <button
                     onClick={() => setBladeOpen((o) => !o)}
-                    className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
+                    className="p-2 rounded-md text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
                     title="Settings"
                   >
                     <GearIcon />
@@ -230,7 +230,7 @@ export function AppShell() {
                 </div>
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
+                  className="p-2 rounded-md text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
                   title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                 >
                   <SidebarIcon />
@@ -281,13 +281,13 @@ function FirstRun({ onSelectRepo, onCopyOnly }: { onSelectRepo: () => void; onCo
         <div className="flex items-center justify-center gap-4 mt-8">
           <button 
             onClick={onSelectRepo} 
-            className="text-sm font-bold px-6 py-2.5 bg-accent text-accent-fg rounded-full hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+            className="text-sm font-bold px-6 py-2.5 bg-accent text-accent-fg rounded-lg hover:opacity-90 transition-all shadow-lg shadow-accent/20"
           >
             Select repository
           </button>
           <button 
             onClick={onCopyOnly} 
-            className="text-sm font-bold px-6 py-2.5 border border-border rounded-full hover:bg-surface-hover text-text-secondary transition-all"
+            className="text-sm font-bold px-6 py-2.5 border border-border rounded-lg hover:bg-surface-hover text-text-secondary transition-all"
           >
             Try copy-only mode
           </button>
@@ -318,6 +318,15 @@ function SidebarIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M9 3v18" />
+    </svg>
+  )
+}
+
+function IntakePadIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 5h18l-7 10v4h-4v-4L3 5z" fill="var(--c-accent)"/>
+      <rect x="10" y="19" width="4" height="1.5" rx="0.75" fill="var(--c-accent)"/>
     </svg>
   )
 }

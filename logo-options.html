@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IntakePad — Logo Options</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Geist Sans', system-ui, -apple-system, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    padding: 40px;
+    transition: background 0.3s, color 0.3s;
+  }
+  [data-theme="dark"] body,
+  [data-theme="dark"] {
+    background: #0f172a;
+    color: #f8fafc;
+  }
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 48px;
+  }
+  .header-bar h1 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+  [data-theme="dark"] .header-bar h1 { color: #94a3b8; }
+  .header-bar p {
+    font-size: 14px;
+    color: #475569;
+  }
+  [data-theme="dark"] .header-bar p { color: #94a3b8; }
+  .header-bar button {
+    padding: 8px 20px;
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  [data-theme="dark"] .header-bar button {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .header-bar button:hover { opacity: 0.85; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  [data-theme="dark"] .card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.1);
+  }
+  [data-theme="dark"] .card:hover {
+    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.4);
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  [data-theme="dark"] .card-header { border-color: #334155; }
+  .card-header h2 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  [data-theme="dark"] .card-header h2 { color: #f8fafc; }
+  .card-header span {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  [data-theme="dark"] .card-header span {
+    background: #334155;
+    color: #94a3b8;
+  }
+  .card-desc {
+    padding: 8px 20px 0;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  [data-theme="dark"] .card-desc { color: #94a3b8; }
+  .preview-area {
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .preview-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  .preview-row label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+  }
+  .light-preview, .dark-preview {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    border-radius: 12px;
+  }
+  .light-preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  [data-theme="dark"] .light-preview {
+    background: #0f172a;
+    border-color: #334155;
+  }
+  .dark-preview {
+    background: #0f172a;
+    border: 1px solid #334155;
+  }
+  [data-theme="dark"] .dark-preview {
+    background: #020617;
+  }
+  .icon-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .icon-wrap .caption {
+    font-size: 9px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  [data-theme="dark"] .icon-wrap .caption { color: #64748b; }
+  .text-logo {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  [data-theme="dark"] .text-logo { color: #f8fafc; }
+  .footer-note {
+    margin-top: 40px;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  [data-theme="dark"] .footer-note { color: #64748b; }
+  .accent { color: var(--accent); }
+  :root { --accent: #4f46e5; }
+  [data-theme="dark"] { --accent: #6366f1; }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <div>
+    <h1>IntakePad — Logo Options</h1>
+    <p>Six concepts. Each shown as favicon (16×16, 32×32), header mark (24×24), and full lockup.</p>
+  </div>
+  <button onclick="toggleTheme()">Toggle Theme</button>
+</div>
+
+<div class="grid">
+
+  <!-- ── My Concepts ── -->
+
+  <!-- 1: Funnel → Ticket -->
+  <div class="card">
+    <div class="card-header"><h2>Funnel → Ticket</h2><span>A</span></div>
+    <div class="card-desc">Downward intake funnel resolving into an issue ticket tray. Maps directly to "intake → issue."</div>
+    <div class="preview-area">
+      <div class="preview-row">
+        <label>Light</label>
+        <div class="light-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3h12L9 10v3H7v-3L2 3z" fill="#4f46e5" opacity="0.8"/><rect x="6" y="13" width="4" height="1" rx="0.5" fill="#4f46e5"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M4 6h24L18 20v6h-4v-6L4 6z" fill="#4f46e5" opacity="0.9"/><path d="M12 26h8v2h-8v-2z" fill="#4f46e5"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 5h18l-7 10v4h-4v-4L3 5z" fill="#4f46e5" opacity="0.9"/><rect x="10" y="19" width="4" height="1.5" rx="0.75" fill="#4f46e5"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 5h18l-7 10v4h-4v-4L3 5z" fill="#4f46e5"/><rect x="10" y="19" width="4" height="1.5" rx="0.75" fill="#4f46e5"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+      <div class="preview-row">
+        <label>Dark</label>
+        <div class="dark-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3h12L9 10v3H7v-3L2 3z" fill="#6366f1" opacity="0.85"/><rect x="6" y="13" width="4" height="1" rx="0.5" fill="#6366f1"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M4 6h24L18 20v6h-4v-6L4 6z" fill="#6366f1" opacity="0.9"/><path d="M12 26h8v2h-8v-2z" fill="#6366f1"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 5h18l-7 10v4h-4v-4L3 5z" fill="#6366f1" opacity="0.9"/><rect x="10" y="19" width="4" height="1.5" rx="0.75" fill="#6366f1"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px;color:#f8fafc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 5h18l-7 10v4h-4v-4L3 5z" fill="#6366f1"/><rect x="10" y="19" width="4" height="1.5" rx="0.75" fill="#6366f1"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: Spark Document -->
+  <div class="card">
+    <div class="card-header"><h2>Spark Document</h2><span>B</span></div>
+    <div class="card-desc">Document outline with a spark star — "raw notes → polished." The spark hints at AI enhancement.</div>
+    <div class="preview-area">
+      <div class="preview-row">
+        <label>Light</label>
+        <div class="light-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="1" width="11" height="14" rx="1.5" stroke="#4f46e5" stroke-width="1.2" fill="none"/><path d="M8 5l.6 1.4L10 7l-1.4.6L8 9l-.6-1.4L6 7l1.4-.6L8 5z" fill="#4f46e5" opacity="0.8"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="5" y="2" width="22" height="28" rx="3" stroke="#4f46e5" stroke-width="2" fill="none"/><path d="M16 10l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2L16 10z" fill="#4f46e5" opacity="0.9"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="1.5" width="16" height="21" rx="2.5" stroke="#4f46e5" stroke-width="1.8" fill="none"/><path d="M12 7.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" fill="#4f46e5" opacity="0.9"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="1.5" width="16" height="21" rx="2.5" stroke="#4f46e5" stroke-width="1.8" fill="none"/><path d="M12 7.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" fill="#4f46e5"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+      <div class="preview-row">
+        <label>Dark</label>
+        <div class="dark-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="1" width="11" height="14" rx="1.5" stroke="#6366f1" stroke-width="1.2" fill="none"/><path d="M8 5l.6 1.4L10 7l-1.4.6L8 9l-.6-1.4L6 7l1.4-.6L8 5z" fill="#6366f1" opacity="0.8"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="5" y="2" width="22" height="28" rx="3" stroke="#6366f1" stroke-width="2" fill="none"/><path d="M16 10l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2L16 10z" fill="#6366f1" opacity="0.9"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="1.5" width="16" height="21" rx="2.5" stroke="#6366f1" stroke-width="1.8" fill="none"/><path d="M12 7.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" fill="#6366f1" opacity="0.9"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px;color:#f8fafc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="1.5" width="16" height="21" rx="2.5" stroke="#6366f1" stroke-width="1.8" fill="none"/><path d="M12 7.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" fill="#6366f1"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3: IP Monogram -->
+  <div class="card">
+    <div class="card-header"><h2>IP Monogram Mark</h2><span>C</span></div>
+    <div class="card-desc">Stylized "I" + "P" merged into a geometric mark. Clean brand identity, strips well as favicon.</div>
+    <div class="preview-area">
+      <div class="preview-row">
+        <label>Light</label>
+        <div class="light-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="3" fill="#4f46e5" opacity="0.1"/><path d="M4.5 12V4h2.5l2.5 4.5h-2L10 12H7.5L5.5 8h.5v4H4.5z" fill="#4f46e5"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="6" fill="#4f46e5" opacity="0.08"/><path d="M9 24V8h5l5 9h-4l4 7h-5l-4-8h1v8H9z" fill="#4f46e5"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#4f46e5" opacity="0.08"/><path d="M6.5 18V6h4l4 7h-3l3 5h-4l-3-6h1v6H6.5z" fill="#4f46e5"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#4f46e5" opacity="0.08"/><path d="M6.5 18V6h4l4 7h-3l3 5h-4l-3-6h1v6H6.5z" fill="#4f46e5"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+      <div class="preview-row">
+        <label>Dark</label>
+        <div class="dark-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="3" fill="#6366f1" opacity="0.2"/><path d="M4.5 12V4h2.5l2.5 4.5h-2L10 12H7.5L5.5 8h.5v4H4.5z" fill="#6366f1"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect x="2" y="2" width="28" height="28" rx="6" fill="#6366f1" opacity="0.15"/><path d="M9 24V8h5l5 9h-4l4 7h-5l-4-8h1v8H9z" fill="#6366f1"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#6366f1" opacity="0.15"/><path d="M6.5 18V6h4l4 7h-3l3 5h-4l-3-6h1v6H6.5z" fill="#6366f1"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px;color:#f8fafc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#6366f1" opacity="0.15"/><path d="M6.5 18V6h4l4 7h-3l3 5h-4l-3-6h1v6H6.5z" fill="#6366f1"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Your Concepts ── -->
+
+  <!-- 4: The Synthesis -->
+  <div class="card">
+    <div class="card-header"><h2>The Synthesis</h2><span>D</span></div>
+    <div class="card-desc">Three horizontal lines of decreasing width — wide messy input synthesized into a sharp focused output.</div>
+    <div class="preview-area">
+      <div class="preview-row">
+        <label>Light</label>
+        <div class="light-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M5 12H19" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18H16" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/><path d="M5 12H19" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/><path d="M8 18H16" stroke="#4f46e5" stroke-width="3" stroke-linecap="round"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M5 12H19" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18H16" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M5 12H19" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18H16" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+      <div class="preview-row">
+        <label>Dark</label>
+        <div class="dark-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M5 12H19" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18H16" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M5 12H19" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/><path d="M8 18H16" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M5 12H19" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18H16" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px;color:#f8fafc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M2 6H22" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M5 12H19" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M8 18H16" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5: The Monolith -->
+  <div class="card">
+    <div class="card-header"><h2>The Monolith</h2><span>E</span></div>
+    <div class="card-desc">Sharp geometric pad. High stability, utility-first feel. Clean at any size, but generic — could be any notes app.</div>
+    <div class="preview-area">
+      <div class="preview-row">
+        <label>Light</label>
+        <div class="light-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="2.5" stroke="#4f46e5" stroke-width="2"/><path d="M9 9H15M9 13H13" stroke="#4f46e5" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="#4f46e5" stroke-width="2.5"/><path d="M9 8H15M9 12H13" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" opacity="0.4"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="#4f46e5" stroke-width="2"/><path d="M9 8H15M9 12H13" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="#4f46e5" stroke-width="2"/><path d="M9 8H15M9 12H13" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+      <div class="preview-row">
+        <label>Dark</label>
+        <div class="dark-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="16" rx="2.5" stroke="#6366f1" stroke-width="2"/><path d="M9 9H15M9 13H13" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="#6366f1" stroke-width="2.5"/><path d="M9 8H15M9 12H13" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.4"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="#6366f1" stroke-width="2"/><path d="M9 8H15M9 12H13" stroke="#6366f1" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px;color:#f8fafc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="#6366f1" stroke-width="2"/><path d="M9 8H15M9 12H13" stroke="#6366f1" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6: The Spark -->
+  <div class="card">
+    <div class="card-header"><h2>The Spark</h2><span>F</span></div>
+    <div class="card-desc">Abstract intake arrow with a dot, hinting at AI transformation. Ambiguous at small sizes.</div>
+    <div class="preview-area">
+      <div class="preview-row">
+        <label>Light</label>
+        <div class="light-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4V20" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 4L17 9" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 4L7 9" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 3V21" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L16 7" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L8 7" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2" fill="#4f46e5" opacity="0.5"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3V21" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L16 7" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L8 7" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2" fill="#4f46e5" opacity="0.5"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3V21" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L16 7" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L8 7" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2" fill="#4f46e5" opacity="0.5"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+      <div class="preview-row">
+        <label>Dark</label>
+        <div class="dark-preview">
+          <div class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4V20" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 4L17 9" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 4L7 9" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/></svg><span class="caption">16px</span></div>
+          <div class="icon-wrap"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 3V21" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L16 7" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L8 7" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2" fill="#6366f1" opacity="0.5"/></svg><span class="caption">32px</span></div>
+          <div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3V21" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L16 7" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L8 7" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2" fill="#6366f1" opacity="0.5"/></svg><span class="caption">24px</span></div>
+          <div class="icon-wrap"><div class="text-logo" style="display:flex;align-items:center;gap:8px;color:#f8fafc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3V21" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L16 7" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><path d="M12 3L8 7" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/><circle cx="18" cy="18" r="2" fill="#6366f1" opacity="0.5"/></svg>IntakePad</div><span class="caption">header</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  <strong>A–C</strong> from one pass &nbsp;|&nbsp; <strong>D–F</strong> from another. &nbsp;·&nbsp; Colors use the app's existing accent: <code style="background:#f1f5f9;padding:1px 6px;border-radius:3px;">#4f46e5</code> (light) / <code style="background:#1e293b;padding:1px 6px;border-radius:3px;color:#e2e8f0;">#6366f1</code> (dark).
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+}
+</script>
+</body>
+</html>

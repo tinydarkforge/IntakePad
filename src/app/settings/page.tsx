@@ -141,7 +141,7 @@ export default function SettingsPage() {
             {/* Repository */}
             <section className="space-y-6">
               <h2 className="text-[10px] font-bold uppercase tracking-widest text-text-muted">GitHub Configuration</h2>
-              <div className="bg-panel rounded-xl border border-border p-6 shadow-sm">
+              <div className="bg-panel rounded-lg border border-border p-6 shadow-sm">
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="repo" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Target Repository</label>
@@ -151,7 +151,7 @@ export default function SettingsPage() {
                       value={repo}
                       onChange={(e) => setRepo(e.target.value)}
                       placeholder="owner/repo"
-                      className="w-full px-4 py-2 text-sm bg-bg border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+                      className="w-full px-4 py-2 text-sm bg-bg border border-border rounded-md outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
                     />
                     <p className="text-[10px] text-text-muted mt-2 font-medium italic">Format: owner/repo (public repository).</p>
                   </div>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                       value={pat}
                       onChange={(e) => setPat(e.target.value)}
                       placeholder="github_pat_..."
-                      className="w-full px-4 py-2 text-sm bg-bg border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all font-mono"
+                      className="w-full px-4 py-2 text-sm bg-bg border border-border rounded-md outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all font-mono"
                     />
                     <p className="text-[10px] text-text-muted mt-2 font-medium leading-relaxed">
                       Required to create issues. Create a{" "}
@@ -185,13 +185,13 @@ export default function SettingsPage() {
                 <div className="relative" ref={presetsRef}>
                   <button
                     onClick={() => setShowPresets((s) => !s)}
-                    className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-accent text-accent-fg rounded-full hover:opacity-90 transition-all shadow-md shadow-accent/20"
+                    className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-accent text-accent-fg rounded-lg hover:opacity-90 transition-all shadow-md shadow-accent/20"
                   >
                     + Add Provider
                   </button>
 
                   {showPresets && (
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-panel border border-border rounded-xl shadow-xl py-2 z-20 max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-panel border border-border rounded-lg shadow-xl py-2 z-20 max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2">
                       <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-text-muted border-b border-border/50 mb-1">Recommended Presets</p>
                       {AI_PRESETS.map((preset) => (
                         <button
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                 ))}
 
                 {providers.length === 0 && (
-                  <div className="rounded-xl border-2 border-dashed border-border p-12 text-center bg-bg/50">
+                  <div className="rounded-lg border-2 border-dashed border-border p-12 text-center bg-bg/50">
                     <p className="text-xs font-bold text-text-muted uppercase tracking-widest">No Providers Configured</p>
                     <p className="text-xs text-text-muted mt-2">Add a local or cloud provider to start enhancing issues.</p>
                   </div>
@@ -259,7 +259,7 @@ export default function SettingsPage() {
             <div className="pt-8 flex items-center gap-4">
               <button
                 onClick={handleSave}
-                className="px-8 py-3 text-xs font-bold uppercase tracking-widest text-accent-fg bg-accent rounded-full hover:opacity-90 transition-all shadow-lg shadow-accent/20"
+                className="px-8 py-3 text-xs font-bold uppercase tracking-widest text-accent-fg bg-accent rounded-lg hover:opacity-90 transition-all shadow-lg shadow-accent/20"
               >
                 {saved ? "Settings Saved" : "Save Changes"}
               </button>
@@ -324,7 +324,7 @@ function ProviderCard({
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
-      className="rounded-xl border border-border bg-panel overflow-hidden shadow-sm"
+      className="rounded-lg border border-border bg-panel overflow-hidden shadow-sm"
     >
       {/* Header row */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-sidebar/50">
@@ -369,7 +369,7 @@ function ProviderCard({
             <select
               value={provider.shape}
               onChange={(e) => onUpdate({ shape: e.target.value as AiShape })}
-              className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all"
+              className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-md outline-none focus:border-accent transition-all"
             >
               <option value="anthropic">Anthropic</option>
               <option value="openai">OpenAI-compatible</option>
@@ -382,7 +382,7 @@ function ProviderCard({
               value={provider.model}
               onChange={(e) => onUpdate({ model: e.target.value })}
               placeholder="e.g. gpt-4o-mini"
-              className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all font-mono"
+              className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-md outline-none focus:border-accent transition-all font-mono"
             />
           </div>
         </div>
@@ -394,7 +394,7 @@ function ProviderCard({
             value={provider.baseUrl}
             onChange={(e) => onUpdate({ baseUrl: e.target.value })}
             placeholder="https://api.openai.com/v1"
-            className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all font-mono"
+            className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-md outline-none focus:border-accent transition-all font-mono"
           />
         </div>
 
@@ -405,7 +405,7 @@ function ProviderCard({
             value={apiKey}
             onChange={(e) => onKeyChange(e.target.value)}
             placeholder={provider.shape === "anthropic" ? "sk-ant-..." : "sk-... or leave blank for local"}
-            className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all font-mono"
+            className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-md outline-none focus:border-accent transition-all font-mono"
           />
         </div>
       </div>
@@ -416,7 +416,7 @@ function ProviderCard({
           <button
             onClick={onMoveUp}
             disabled={index === 0}
-            className="w-7 h-7 flex items-center justify-center text-xs text-text-muted hover:text-text border border-border rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="w-7 h-7 flex items-center justify-center text-xs text-text-muted hover:text-text border border-border rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             title="Move up"
             aria-label="Move up"
           >
@@ -425,7 +425,7 @@ function ProviderCard({
           <button
             onClick={onMoveDown}
             disabled={index === total - 1}
-            className="w-7 h-7 flex items-center justify-center text-xs text-text-muted hover:text-text border border-border rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            className="w-7 h-7 flex items-center justify-center text-xs text-text-muted hover:text-text border border-border rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             title="Move down"
             aria-label="Move down"
           >
@@ -433,7 +433,7 @@ function ProviderCard({
           </button>
           <button
             onClick={onHealthCheck}
-            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 text-text-muted hover:text-text border border-border rounded-lg transition-all ml-1"
+            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 text-text-muted hover:text-text border border-border rounded-md transition-all ml-1"
           >
             {hc && hc !== "loading" ? "Check again" : "Health check"}
           </button>
@@ -506,7 +506,7 @@ function TagBadge({ tag }: { tag: string }) {
   }
   const cls = colors[tag] ?? "text-gray-600 bg-gray-100"
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${cls}`}>{tag}</span>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${cls}`}>{tag}</span>
   )
 }
 

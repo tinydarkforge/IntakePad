@@ -16,9 +16,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "IntakePad",
   description: "Messy notes in. Clean GitHub issue out.",
-  icons: {
-    icon: "/icon.svg",
-  },
 }
 
 export default function RootLayout({

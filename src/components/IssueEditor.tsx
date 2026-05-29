@@ -388,7 +388,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
         )}
 
         {enhanceError && (
-          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-md border border-danger-border flex items-center justify-between gap-3 animate-in shake">
+          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-md border border-danger-border flex items-center justify-between gap-3 shake">
             <span>AI enhancement failed. {enhanceError}</span>
             <button onClick={handleEnhance} className="font-bold underline shrink-0 hover:opacity-80">Retry</button>
           </div>

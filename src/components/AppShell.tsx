@@ -172,15 +172,6 @@ export function AppShell() {
         </div>
 
         <div className="flex items-center gap-4">
-          {!sidebarOpen && hasRepo && !copyOnly && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
-              title="Open sidebar"
-            >
-              <SidebarIcon />
-            </button>
-          )}
           {copyOnly && (
             <button
               onClick={() => setCopyOnly(false)}
@@ -197,24 +188,26 @@ export function AppShell() {
         {hasRepo && !copyOnly && (
           <aside 
             className={`border-r border-border bg-sidebar shrink-0 flex flex-col transition-all duration-300 ease-in-out ${
-              sidebarOpen ? "w-64" : "w-0 opacity-0 pointer-events-none"
+              sidebarOpen ? "w-64" : "w-16"
             }`}
           >
-            <TemplateList
-              templates={templates}
-              selectedId={selectedTemplate?.id ?? null}
-              blankActive={showEditor && selectedTemplate === null}
-              loadedAt={loadedAt}
-              refreshing={loadingState.type === "loading"}
-              onSelect={handleSelect}
-              onSelectBlank={handleSelectBlank}
-              onRefresh={() => handleLoadRepo(repo)}
-            />
+            <div className={`flex-1 flex flex-col overflow-hidden transition-opacity duration-200 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+              <TemplateList
+                templates={templates}
+                selectedId={selectedTemplate?.id ?? null}
+                blankActive={showEditor && selectedTemplate === null}
+                loadedAt={loadedAt}
+                refreshing={loadingState.type === "loading"}
+                onSelect={handleSelect}
+                onSelectBlank={handleSelectBlank}
+                onRefresh={() => handleLoadRepo(repo)}
+              />
+            </div>
 
             {/* Bottom blade */}
             <div className="border-t border-border shrink-0 p-3 bg-sidebar/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
+              <div className={`flex items-center ${sidebarOpen ? "justify-between" : "justify-center"}`}>
+                <div className={`flex items-center gap-1 ${sidebarOpen ? "" : "hidden"}`}>
                   <button
                     onClick={() => setBladeOpen((o) => !o)}
                     className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
@@ -236,9 +229,9 @@ export function AppShell() {
                   )}
                 </div>
                 <button
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
                   className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-hover transition-colors"
-                  title="Collapse sidebar"
+                  title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                 >
                   <SidebarIcon />
                 </button>

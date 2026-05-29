@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/AppShell"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 export default function Home() {
-  return <AppShell />
+  return <ErrorBoundary><AppShell /></ErrorBoundary>
 }

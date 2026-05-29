@@ -312,16 +312,16 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 flex flex-col gap-3 px-6 pt-5 pb-3 overflow-auto">
+      <div className="flex-1 flex flex-col gap-6 px-10 pt-8 pb-4 overflow-auto">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-text-muted flex items-center gap-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted flex items-center gap-2">
             {copyOnly
-              ? "Copy-only mode — write or paste, then copy the Markdown."
+              ? "Drafting: Copy-only mode"
               : template
-                ? <><span>Template: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors" aria-label="Restore original template body">OG</button><button onClick={() => setBody("")} className="underline hover:text-text transition-colors" aria-label="Clear body">Clear</button></>
-                : "Blank issue"}
+                ? <><span>Drafting: {template.name}</span><button onClick={() => setBody(template?.body ?? "")} className="underline hover:text-text transition-colors" aria-label="Restore original template body">Reset</button></>
+                : "Drafting: Blank issue"}
           </p>
-          <div className="flex items-center gap-0.5 rounded-md border border-border p-0.5 bg-panel">
+          <div className="flex items-center gap-0.5 rounded-lg border border-border p-1 bg-bg shadow-sm">
             <ViewTab active={view === "edit"} onClick={() => setView("edit")}>Edit</ViewTab>
             <ViewTab active={view === "preview"} onClick={() => setView("preview")}>Preview</ViewTab>
           </div>
@@ -331,10 +331,10 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Short issue title"
+          placeholder="Issue title"
           disabled={enhancing}
           maxLength={TITLE_MAX}
-          className="w-full text-lg font-semibold bg-transparent border-none outline-none placeholder:text-text-muted py-1 disabled:opacity-60"
+          className="w-full text-3xl font-bold bg-transparent border-none outline-none placeholder:text-border py-1 disabled:opacity-60"
           aria-label="Issue title"
         />
 
@@ -356,18 +356,18 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onPaste={handleImagePaste}
-              placeholder="Paste notes, bug reports, Slack threads, customer feedback, logs, or rough ideas. You can also paste screenshots."
+              placeholder="Paste notes, bug reports, logs, or rough ideas. Screenshots also work."
               disabled={enhancing}
               maxLength={BODY_MAX}
-              className="flex-1 w-full bg-transparent border-none outline-none resize-none placeholder:text-text-muted leading-relaxed text-sm disabled:opacity-60"
+              className="flex-1 w-full bg-transparent border-none outline-none resize-none placeholder:text-text-muted leading-relaxed text-base disabled:opacity-60"
               aria-label="Issue body"
             />
-            <div className={`text-right text-[10px] pt-0.5 ${body.length > BODY_MAX * 0.95 ? "text-danger-fg" : "text-text-muted"}`}>
-              {body.length.toLocaleString()}/{BODY_MAX.toLocaleString()}
+            <div className={`text-right text-[10px] font-medium pt-2 ${body.length > BODY_MAX * 0.95 ? "text-danger-fg" : "text-text-muted"}`}>
+              {body.length.toLocaleString()} / {BODY_MAX.toLocaleString()}
             </div>
             {enhancing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-panel/60 backdrop-blur-[1px]">
-                <div className="flex items-center gap-2 text-sm text-text-secondary">
+              <div className="absolute inset-0 flex items-center justify-center bg-panel/60 backdrop-blur-[1px] rounded-lg">
+                <div className="flex flex-col items-center gap-3 text-sm font-medium text-text-secondary">
                   <Spinner />
                   Improving issue draft…
                 </div>
@@ -375,45 +375,46 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             )}
           </div>
         ) : (
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto bg-bg/50 rounded-xl border border-border/50 p-6">
             <MarkdownPreview content={buildContent(title, body)} />
           </div>
         )}
 
         {uploadingImages && (
-          <div className="text-xs text-text-secondary bg-surface-hover px-3 py-2 rounded-md border border-border flex items-center gap-2">
+          <div className="text-xs font-medium text-text-secondary bg-surface-hover px-4 py-3 rounded-lg border border-border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+            <Spinner />
             <span>Uploading images to repository…</span>
           </div>
         )}
 
         {enhanceError && (
-          <div className="text-xs text-danger-fg bg-danger-bg px-3 py-2 rounded-md border border-danger-border flex items-center justify-between gap-3">
-            <span>AI enhancement failed. Your draft is unchanged. {enhanceError}</span>
-            <button onClick={handleEnhance} className="underline shrink-0 hover:opacity-80">Try again</button>
+          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-lg border border-danger-border flex items-center justify-between gap-3 animate-in shake">
+            <span>AI enhancement failed. {enhanceError}</span>
+            <button onClick={handleEnhance} className="font-bold underline shrink-0 hover:opacity-80">Retry</button>
           </div>
         )}
 
         {error && (
-          <div className="text-xs text-danger-fg bg-danger-bg px-3 py-2 rounded-md border border-danger-border">
+          <div className="text-xs font-medium text-danger-fg bg-danger-bg px-4 py-3 rounded-lg border border-danger-border">
             {error}
             {!copyOnly && (
-              <button onClick={handleCopy} className="underline ml-2 hover:opacity-80">Copy Markdown instead</button>
+              <button onClick={handleCopy} className="font-bold underline ml-2 hover:opacity-80">Copy Markdown instead</button>
             )}
           </div>
         )}
       </div>
 
-      <div className="border-t border-border px-6 py-3 flex items-center justify-between gap-3">
-        <div className="text-xs text-text-muted">
-          {lastSaved ? `Saved ${formatTimeAgo(now - lastSaved)}` : "Not saved yet"}
+      <div className="h-16 border-t border-border px-10 py-3 flex items-center justify-between gap-3 bg-panel/50 backdrop-blur-md shrink-0">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
+          {lastSaved ? `Auto-saved ${formatTimeAgo(now - lastSaved)}` : "Not saved"}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {aiState === "ready" && (
             <button
               onClick={handleEnhance}
               disabled={enhancing || !body.trim()}
-              className="px-3 py-1.5 text-sm text-text-secondary border border-border rounded-md hover:bg-surface-hover transition-colors disabled:opacity-40 flex items-center gap-1.5"
+              className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-lg hover:bg-surface-hover transition-all disabled:opacity-40 flex items-center gap-2 shadow-sm"
               title="Enhance (⌘E)"
             >
               <SparkIcon />
@@ -423,7 +424,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           {aiState === "setup" && (
             <Link
               href="/settings"
-              className="px-3 py-1.5 text-sm text-text-secondary border border-border rounded-md hover:bg-surface-hover transition-colors"
+              className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-lg hover:bg-surface-hover transition-all shadow-sm"
             >
               Set up AI
             </Link>
@@ -432,7 +433,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           <button
             onClick={handleCopy}
             disabled={!title && !body}
-            className="px-3 py-1.5 text-sm text-text-secondary border border-border rounded-md hover:bg-surface-hover transition-colors disabled:opacity-40"
+            className="px-4 py-2 text-xs font-bold text-text-secondary border border-border rounded-lg hover:bg-surface-hover transition-all disabled:opacity-40 shadow-sm"
             title="Copy Markdown (⌘⇧C)"
           >
             {copied ? "Copied!" : "Copy Markdown"}
@@ -442,14 +443,11 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
             <button
               onClick={handleCreate}
               disabled={!canCreate}
-              className="px-4 py-1.5 text-sm text-accent-fg bg-accent rounded-md hover:bg-accent-hover transition-colors disabled:opacity-40 font-medium"
+              className="px-6 py-2 text-xs font-bold text-accent-fg bg-accent rounded-lg hover:opacity-90 transition-all disabled:opacity-40 shadow-lg shadow-accent/10"
               title="Create issue (⌘↵)"
             >
-              {creating ? "Creating…" : "Create issue"}
+              {creating ? "Creating…" : "Create Issue"}
             </button>
-          )}
-          {!copyOnly && !authed && title && (
-            <p className="text-xs text-text-muted">Add a token in Settings to create</p>
           )}
         </div>
       </div>
@@ -461,8 +459,8 @@ function ViewTab({ active, onClick, children }: { active: boolean; onClick: () =
   return (
     <button
       onClick={onClick}
-      className={`text-xs px-2.5 py-1 rounded transition-colors ${
-        active ? "bg-surface-hover text-text font-medium" : "text-text-muted hover:text-text"
+      className={`text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-md transition-all ${
+        active ? "bg-panel text-text shadow-sm ring-1 ring-border/50" : "text-text-muted hover:text-text"
       }`}
     >
       {children}

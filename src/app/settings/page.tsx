@@ -125,66 +125,101 @@ export default function SettingsPage() {
 
   return (
     <div className="h-screen flex flex-col bg-bg">
-      <header className="h-12 border-b border-border flex items-center justify-between px-4 bg-panel shrink-0">
+      <header className="h-14 border-b border-border flex items-center justify-between px-6 bg-panel shrink-0 z-10">
         <div className="flex items-center">
-          <Link href="/" className="text-sm text-text-muted hover:text-text transition-colors">
+          <Link href="/" className="text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text transition-colors">
             &larr; Back
           </Link>
-          <span className="text-sm font-semibold text-text ml-4">Settings</span>
+          <span className="text-sm font-bold tracking-tight text-text ml-6">Settings</span>
         </div>
         <ThemeToggle />
       </header>
 
       <div className="flex-1 overflow-auto">
-        <div className="max-w-lg mx-auto px-6 py-8">
-          <div className="space-y-8">
+        <div className="max-w-xl mx-auto px-8 py-10">
+          <div className="space-y-10">
             {/* Repository */}
-            <section className="space-y-4">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">GitHub</h2>
-              <div>
-                <label htmlFor="repo" className="block text-sm font-medium text-text mb-1.5">Repository</label>
-                <input
-                  id="repo"
-                  type="text"
-                  value={repo}
-                  onChange={(e) => setRepo(e.target.value)}
-                  placeholder="owner/repo"
-                  className="w-full px-3 py-2 text-sm bg-panel border border-border rounded-md outline-none focus:border-accent transition-colors"
-                />
-                <p className="text-xs text-text-muted mt-1.5">Format: owner/repo (public repository).</p>
-              </div>
+            <section className="space-y-6">
+              <h2 className="text-[10px] font-bold uppercase tracking-widest text-text-muted">GitHub Configuration</h2>
+              <div className="bg-panel rounded-xl border border-border p-6 shadow-sm">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="repo" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Target Repository</label>
+                    <input
+                      id="repo"
+                      type="text"
+                      value={repo}
+                      onChange={(e) => setRepo(e.target.value)}
+                      placeholder="owner/repo"
+                      className="w-full px-4 py-2 text-sm bg-bg border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+                    />
+                    <p className="text-[10px] text-text-muted mt-2 font-medium italic">Format: owner/repo (public repository).</p>
+                  </div>
 
-              <div>
-                <label htmlFor="pat" className="block text-sm font-medium text-text mb-1.5">Personal Access Token</label>
-                <input
-                  id="pat"
-                  type="password"
-                  value={pat}
-                  onChange={(e) => setPat(e.target.value)}
-                  placeholder="github_pat_..."
-                  className="w-full px-3 py-2 text-sm bg-panel border border-border rounded-md outline-none focus:border-accent transition-colors font-mono"
-                />
-                <p className="text-xs text-text-muted mt-1.5">
-                  Create a{" "}
-                  <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=IntakePad"
-                     target="_blank" rel="noopener noreferrer"
-                     className="underline hover:text-accent">classic PAT</a>{" "}
-                  with <code className="text-xs bg-surface-hover px-1 py-0.5 rounded">public_repo</code> scope.
-                </p>
+                  <div>
+                    <label htmlFor="pat" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Personal Access Token</label>
+                    <input
+                      id="pat"
+                      type="password"
+                      value={pat}
+                      onChange={(e) => setPat(e.target.value)}
+                      placeholder="github_pat_..."
+                      className="w-full px-4 py-2 text-sm bg-bg border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all font-mono"
+                    />
+                    <p className="text-[10px] text-text-muted mt-2 font-medium leading-relaxed">
+                      Required to create issues. Create a{" "}
+                      <a href="https://github.com/settings/tokens/new?scopes=public_repo&description=IntakePad"
+                         target="_blank" rel="noopener noreferrer"
+                         className="text-accent hover:underline font-bold">classic PAT</a>{" "}
+                      with <code className="text-[10px] bg-accent-soft px-1.5 py-0.5 rounded font-bold text-accent">public_repo</code> scope.
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
 
             {/* AI enhancement */}
-            <section className="space-y-4 pt-6 border-t border-border">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">AI enhancement</h2>
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[10px] font-bold uppercase tracking-widest text-text-muted">AI Enhancement Queue</h2>
+                <div className="relative" ref={presetsRef}>
+                  <button
+                    onClick={() => setShowPresets((s) => !s)}
+                    className="text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-accent text-accent-fg rounded-full hover:opacity-90 transition-all shadow-md shadow-accent/20"
+                  >
+                    + Add Provider
+                  </button>
 
-              <p className="text-xs text-text-muted">
-                Configure a prioritized queue of AI providers. The first enabled provider that
-                succeeds will enhance your draft. Local providers are tried first by default.
+                  {showPresets && (
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-panel border border-border rounded-xl shadow-xl py-2 z-20 max-h-[400px] overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                      <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-text-muted border-b border-border/50 mb-1">Recommended Presets</p>
+                      {AI_PRESETS.map((preset) => (
+                        <button
+                          key={preset.key}
+                          type="button"
+                          onMouseDown={() => addFromPreset(preset)}
+                          className="block w-full text-left px-4 py-3 hover:bg-surface-hover transition-colors"
+                        >
+                          <div className="text-xs font-bold text-text">{preset.name}</div>
+                          <div className="flex items-center gap-1.5 mt-1 mb-1.5">
+                            {preset.tags.map((t) => (
+                              <TagBadge key={t} tag={t} />
+                            ))}
+                          </div>
+                          <div className="text-[10px] text-text-muted leading-normal">{preset.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-xs font-medium text-text-muted leading-relaxed">
+                Prioritize your AI providers. IntakePad will attempt to use them in order until one succeeds.
               </p>
 
               {/* Provider list */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {providers.map((provider, idx) => (
                   <ProviderCard
                     key={provider.id}
@@ -210,67 +245,37 @@ export default function SettingsPage() {
                     }}
                     onDragEnd={() => setDragIdx(null)}
                   />
-))}
+                ))}
 
                 {providers.length === 0 && (
-                  <div className="rounded-md border border-dashed border-border p-4 text-center">
-                    <p className="text-xs text-text-muted">No providers configured. Add one below.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Add provider */}
-              <div className="relative" ref={presetsRef}>
-                <button
-                  onClick={() => setShowPresets((s) => !s)}
-                  className="text-sm px-3 py-1.5 border border-border rounded-md hover:bg-surface-hover text-text-secondary transition-colors"
-                >
-                  + Add provider
-                </button>
-
-                {showPresets && (
-                  <div className="absolute left-0 top-full mt-1 w-72 bg-panel border border-border rounded-md shadow-md py-1 z-10 max-h-72 overflow-y-auto">
-                    {AI_PRESETS.map((preset) => (
-                      <button
-                        key={preset.key}
-                        type="button"
-                        onMouseDown={() => addFromPreset(preset)}
-                        className="block w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors"
-                      >
-                        <div className="text-sm text-text">{preset.name}</div>
-                        <div className="text-xs text-text-muted mt-0.5 flex items-center gap-1.5 flex-wrap">
-                          {preset.tags.map((t) => (
-                            <TagBadge key={t} tag={t} />
-                          ))}
-                        </div>
-                        <div className="text-xs text-text-muted mt-0.5">{preset.description}</div>
-                      </button>
-                    ))}
+                  <div className="rounded-xl border-2 border-dashed border-border p-12 text-center bg-bg/50">
+                    <p className="text-xs font-bold text-text-muted uppercase tracking-widest">No Providers Configured</p>
+                    <p className="text-xs text-text-muted mt-2">Add a local or cloud provider to start enhancing issues.</p>
                   </div>
                 )}
               </div>
             </section>
 
-            <div className="pt-6 border-t border-border flex items-center gap-3">
+            <div className="pt-8 flex items-center gap-4">
               <button
                 onClick={handleSave}
-                className="px-4 py-2 text-sm text-accent-fg bg-accent rounded-md hover:bg-accent-hover transition-colors font-medium"
+                className="px-8 py-3 text-xs font-bold uppercase tracking-widest text-accent-fg bg-accent rounded-full hover:opacity-90 transition-all shadow-lg shadow-accent/20"
               >
-                {saved ? "Saved!" : "Save settings"}
+                {saved ? "Settings Saved" : "Save Changes"}
               </button>
-              <Link href="/" className="text-sm text-text-muted hover:text-text transition-colors">
+              <Link href="/" className="text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text transition-colors">
                 Done
               </Link>
             </div>
 
-            <p className="text-xs text-text-muted">
-              Settings and drafts are saved locally in your browser. No data is sent to any server
-              except GitHub and your chosen AI provider(s).
+            <p className="text-[10px] font-medium text-text-muted leading-relaxed italic border-t border-border pt-6">
+              Privacy note: Settings and drafts are stored locally in your browser. API keys are only sent to their respective providers.
             </p>
           </div>
         </div>
       </div>
     </div>
+
   )
 }
 
@@ -319,28 +324,28 @@ function ProviderCard({
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
-      className="rounded-md border border-border bg-panel overflow-hidden"
+      className="rounded-xl border border-border bg-panel overflow-hidden shadow-sm"
     >
       {/* Header row */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-surface-hover">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-sidebar/50">
         <DragHandle />
         <label className="flex items-center gap-2 cursor-pointer shrink-0">
           <input
             type="checkbox"
             checked={provider.enabled}
             onChange={(e) => onUpdate({ enabled: e.target.checked })}
-            className="accent-[var(--c-accent)]"
+            className="w-4 h-4 accent-accent rounded"
           />
         </label>
         <input
           type="text"
           value={provider.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          className="flex-1 text-sm font-medium text-text bg-transparent border-none outline-none"
+          className="flex-1 text-xs font-bold text-text bg-transparent border-none outline-none focus:text-accent transition-colors"
         />
         <button
           onClick={onRemove}
-          className="text-xs text-text-muted hover:text-danger transition-colors shrink-0"
+          className="text-[10px] font-bold uppercase tracking-wider text-text-muted hover:text-danger transition-colors shrink-0"
           title="Remove provider"
         >
           Remove
@@ -349,7 +354,7 @@ function ProviderCard({
 
       {/* Tags */}
       {tags.length > 0 && (
-        <div className="flex items-center gap-1.5 px-3 pt-2 flex-wrap">
+        <div className="flex items-center gap-1.5 px-4 pt-3 flex-wrap">
           {tags.map((t) => (
             <TagBadge key={t} tag={t} />
           ))}
@@ -357,61 +362,61 @@ function ProviderCard({
       )}
 
       {/* Fields */}
-      <div className="px-3 py-2 space-y-2.5">
-        <div className="grid grid-cols-2 gap-2.5">
+      <div className="px-4 py-4 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-text-muted mb-1">Shape</label>
+            <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">Shape</label>
             <select
               value={provider.shape}
               onChange={(e) => onUpdate({ shape: e.target.value as AiShape })}
-              className="w-full px-2 py-1.5 text-sm bg-panel border border-border rounded-md outline-none focus:border-accent transition-colors"
+              className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all"
             >
               <option value="anthropic">Anthropic</option>
               <option value="openai">OpenAI-compatible</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs text-text-muted mb-1">Model</label>
+            <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">Model</label>
             <input
               type="text"
               value={provider.model}
               onChange={(e) => onUpdate({ model: e.target.value })}
               placeholder="e.g. gpt-4o-mini"
-              className="w-full px-2 py-1.5 text-sm bg-panel border border-border rounded-md outline-none focus:border-accent transition-colors font-mono"
+              className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all font-mono"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs text-text-muted mb-1">Base URL</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">Base URL</label>
           <input
             type="text"
             value={provider.baseUrl}
             onChange={(e) => onUpdate({ baseUrl: e.target.value })}
             placeholder="https://api.openai.com/v1"
-            className="w-full px-2 py-1.5 text-sm bg-panel border border-border rounded-md outline-none focus:border-accent transition-colors font-mono"
+            className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all font-mono"
           />
         </div>
 
         <div>
-          <label className="block text-xs text-text-muted mb-1">API key</label>
+          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1.5">API key</label>
           <input
             type="password"
             value={apiKey}
             onChange={(e) => onKeyChange(e.target.value)}
             placeholder={provider.shape === "anthropic" ? "sk-ant-..." : "sk-... or leave blank for local"}
-            className="w-full px-2 py-1.5 text-sm bg-panel border border-border rounded-md outline-none focus:border-accent transition-colors font-mono"
+            className="w-full px-3 py-2 text-xs bg-bg border border-border rounded-lg outline-none focus:border-accent transition-all font-mono"
           />
         </div>
       </div>
 
       {/* Actions row */}
-      <div className="flex items-center justify-between px-3 pb-2.5">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between px-4 pb-4">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={onMoveUp}
             disabled={index === 0}
-            className="px-2 py-1 text-xs text-text-muted hover:text-text border border-border rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-7 h-7 flex items-center justify-center text-xs text-text-muted hover:text-text border border-border rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             title="Move up"
             aria-label="Move up"
           >
@@ -420,7 +425,7 @@ function ProviderCard({
           <button
             onClick={onMoveDown}
             disabled={index === total - 1}
-            className="px-2 py-1 text-xs text-text-muted hover:text-text border border-border rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-7 h-7 flex items-center justify-center text-xs text-text-muted hover:text-text border border-border rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             title="Move down"
             aria-label="Move down"
           >
@@ -428,7 +433,7 @@ function ProviderCard({
           </button>
           <button
             onClick={onHealthCheck}
-            className="text-xs px-2 py-1 text-text-muted hover:text-text border border-border rounded transition-colors"
+            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 text-text-muted hover:text-text border border-border rounded-lg transition-all ml-1"
           >
             {hc && hc !== "loading" ? "Check again" : "Health check"}
           </button>

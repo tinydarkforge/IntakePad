@@ -23,11 +23,11 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
 
   if (authed) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-text-muted">GitHub connected</span>
+      <div className="flex items-center gap-3">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Connected</span>
         <button
           onClick={handleDisconnect}
-          className="text-xs text-text-muted hover:text-danger transition-colors"
+          className="text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-danger transition-colors"
         >
           Disconnect
         </button>
@@ -38,9 +38,9 @@ export function AuthButton({ onAuthChange }: AuthButtonProps) {
   return (
     <Link
       href="/settings"
-      className="text-xs px-3 py-1.5 bg-accent text-accent-fg rounded-md hover:bg-accent-hover transition-colors"
+      className="text-xs font-bold px-4 py-2 bg-accent text-accent-fg rounded-full hover:opacity-90 transition-all shadow-sm shadow-accent/20"
     >
-      Connect GitHub
+      Sign in
     </Link>
   )
 }

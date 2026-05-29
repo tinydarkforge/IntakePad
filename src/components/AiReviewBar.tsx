@@ -5,12 +5,13 @@ import { useState } from "react"
 interface AiReviewBarProps {
   missingInfo: string[]
   changeSummary: string[]
+  providerName: string
   onUndo: () => void
   onEnhanceAgain: () => void
   busy: boolean
 }
 
-export function AiReviewBar({ missingInfo, changeSummary, onUndo, onEnhanceAgain, busy }: AiReviewBarProps) {
+export function AiReviewBar({ missingInfo, changeSummary, providerName, onUndo, onEnhanceAgain, busy }: AiReviewBarProps) {
   const [showChanges, setShowChanges] = useState(false)
 
   return (
@@ -18,7 +19,8 @@ export function AiReviewBar({ missingInfo, changeSummary, onUndo, onEnhanceAgain
       <div className="flex items-center justify-between gap-3 px-3 py-2">
         <p className="text-xs text-text-secondary flex items-center gap-1.5">
           <SparkIcon />
-          AI enhanced this draft. Review before creating.
+          AI enhanced this draft with <span className="font-medium text-text">{providerName}</span>.
+          Review before creating.
         </p>
         <div className="flex items-center gap-1 shrink-0">
           {changeSummary.length > 0 && (

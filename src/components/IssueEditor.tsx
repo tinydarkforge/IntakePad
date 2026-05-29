@@ -5,9 +5,10 @@ import Link from "next/link"
 import { copyToClipboard, formatTimeAgo } from "@/lib/markdown"
 import { saveDraft, loadDraft, removeDraft } from "@/lib/storage"
 import { createIssue } from "@/lib/github"
-import { loadSettings, AI_DEFAULTS } from "@/lib/settings"
-import { getAiKey } from "@/lib/auth"
-import { enhance, getAiConfig, isAiReady } from "@/lib/ai"
+import { loadSettings } from "@/lib/settings"
+import { getProviderKey } from "@/lib/auth"
+import { enhanceWithQueue } from "@/lib/ai"
+import type { QueueProvider } from "@/lib/ai"
 import { useNow } from "@/lib/useNow"
 import { AiReviewBar } from "./AiReviewBar"
 import { MarkdownPreview } from "./MarkdownPreview"
@@ -25,6 +26,7 @@ type AiState = "off" | "setup" | "ready"
 interface Review {
   missingInfo: string[]
   changeSummary: string[]
+  providerName: string
 }
 
 export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueEditorProps) {
@@ -48,9 +50,16 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
 
   const refreshAiState = useCallback(() => {
     const s = loadSettings()
-    if (!s.aiEnabled) setAiState("off")
-    else if (isAiReady(s, getAiKey())) setAiState("ready")
-    else setAiState("setup")
+    const enabled = s.aiProviders.some((p) => p.enabled)
+    if (!enabled) setAiState("off")
+    else {
+      const anyReady = s.aiProviders.some((p) => {
+        if (!p.enabled || !p.model.trim()) return false
+        if (p.shape === "anthropic") return !!getProviderKey(p.id)
+        return true
+      })
+      setAiState(anyReady ? "ready" : "setup")
+    }
   }, [])
 
   useEffect(() => {
@@ -121,27 +130,41 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
   const handleEnhance = useCallback(async () => {
     if (enhancing || !body.trim()) return
     const s = loadSettings()
-    const key = getAiKey()
-    if (!isAiReady(s, key)) {
-      setAiState(s.aiEnabled ? "setup" : "off")
+
+    const enabledProviders = s.aiProviders.filter((p) => p.enabled)
+    if (enabledProviders.length === 0) {
+      refreshAiState()
       return
     }
+
+    const providersWithKeys: QueueProvider[] = enabledProviders.map((p) => ({
+      id: p.id,
+      name: p.name,
+      shape: p.shape,
+      baseUrl: p.baseUrl,
+      model: p.model,
+      apiKey: getProviderKey(p.id) ?? "",
+    }))
+
     setEnhanceError(null)
     setEnhancing(true)
     const snap = { title, body }
     try {
-      const cfg = getAiConfig(s, key, AI_DEFAULTS)
-      const result = await enhance({ template, title, body, repo }, cfg)
+      const result = await enhanceWithQueue({ template, title, body, repo }, providersWithKeys)
       snapshot.current = snap
-      setTitle(result.title)
-      setBody(result.body)
-      setReview({ missingInfo: result.missingInfo, changeSummary: result.changeSummary })
+      setTitle(result.result.title)
+      setBody(result.result.body)
+      setReview({
+        missingInfo: result.result.missingInfo,
+        changeSummary: result.result.changeSummary,
+        providerName: result.providerName,
+      })
     } catch (e) {
       setEnhanceError(e instanceof Error ? e.message : "AI enhancement failed.")
     } finally {
       setEnhancing(false)
     }
-  }, [enhancing, title, body, template, repo])
+  }, [enhancing, title, body, template, repo, refreshAiState])
 
   const handleUndo = useCallback(() => {
     if (!snapshot.current) return
@@ -244,6 +267,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
           <AiReviewBar
             missingInfo={review.missingInfo}
             changeSummary={review.changeSummary}
+            providerName={review.providerName}
             onUndo={handleUndo}
             onEnhanceAgain={handleEnhance}
             busy={enhancing}

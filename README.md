@@ -1,39 +1,47 @@
-<div align="center">
-
 # IntakePad
 
-**Messy notes in. Clean GitHub issue out.**
+<p align="center">
+  <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-10b981?style=flat-square&labelColor=18181b"></a>
+  <img alt="Next.js" src="https://img.shields.io/badge/next-16-10b981?style=flat-square&labelColor=18181b">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Browser-10b981?style=flat-square&labelColor=18181b">
+  <img alt="Deploy" src="https://img.shields.io/badge/deploy-GitHub%20Pages-10b981?style=flat-square&labelColor=18181b">
+  <a href="https://github.com/tinydarkforge/IntakePad/actions/workflows/deploy.yml"><img alt="Deploy workflow" src="https://github.com/tinydarkforge/IntakePad/actions/workflows/deploy.yml/badge.svg?branch=main"></a>
+  <a href="https://tinydarkforge.github.io/IntakePad/"><img alt="Demo" src="https://img.shields.io/badge/demo-live-10b981?style=flat-square&labelColor=18181b"></a>
+</p>
 
-Turn Slack threads, bug reports, meeting notes, and rough ideas into well-structured GitHub issues — in under a minute. Browser-native, no install, no terminal, no backend.
+**IntakePad turns messy notes into clean GitHub issues.** It loads a repository's own issue templates, drafts in the browser, optionally cleans the text with AI through a provider queue, and creates the issue on GitHub or copies the Markdown.
 
-[**→ Open IntakePad**](https://tinydarkforge.github.io/IntakePad/)
+```mermaid
+flowchart LR
+    A[Messy notes] --> B[Issue editor]
+    C[Repository issue templates] --> B
+    B --> D{AI enhancement?}
+    D -->|Enabled| E[Provider queue with fallback]
+    E --> F[Review before submit]
+    D -->|Off| F
+    F --> G[Create issue / Copy Markdown]
+    H[Browser drafts and settings] --> B
 
-</div>
+    subgraph Browser
+        B
+        E
+        F
+        H
+    end
+```
 
----
-
-## What it does
-
-Paste unstructured text, optionally clean it up with AI, review, then create the issue on GitHub or copy the Markdown. It reads a repository's own `.github/ISSUE_TEMPLATE/` files so the output matches how the team already files issues.
-
-- **Templates from the repo** — loads real issue templates via the GitHub API.
-- **AI enhancement with provider queue** — configure multiple AI providers. IntakePad tries them in priority order and falls back automatically. Supports local models, free tiers, and cloud providers.
-- **Review before anything ships** — see what the AI changed, what's missing, undo in one click. Nothing is auto-submitted.
-- **Create or copy** — push straight to GitHub, or copy Markdown as a fallback.
-- **Local drafts** — autosaved per repo + template, restored on return.
-- **Light / dark** — themed, no flash on load.
-- **Markdown preview**, **keyboard shortcuts**, **copy-only mode** (no repo needed).
+No backend and no account. Settings, drafts, and keys stay in your browser's `localStorage`.
 
 ---
 
 ## Quick start
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Open http://localhost:3000
+Open http://localhost:3000, or use the [hosted app](https://tinydarkforge.github.io/IntakePad/).
 
 ```bash
 npm run build   # static export → ./out
@@ -42,28 +50,17 @@ npm run lint
 
 ---
 
-## Setup
+## How it works
 
-Everything is configured in **Settings** (top-right). Nothing is required to browse public-repo templates or use copy-only mode.
+IntakePad reads a repository's own `.github/ISSUE_TEMPLATE/` files through the GitHub REST API, so drafts match the format the team already uses. Paste unstructured text, optionally enhance it with AI, review what changed, then create the issue or copy the Markdown. Nothing is submitted without your click.
 
-### 1. Create GitHub issues (optional)
+**Templates from the repo** — real issue templates are loaded via the GitHub API, with a blank-issue fallback and copy-only mode when no repository is configured.
 
-1. Settings → **Personal Access Token**
-2. Create a [classic PAT](https://github.com/settings/tokens/new?scopes=public_repo&description=IntakePad) with **`public_repo`** scope
-3. Paste it, set your `owner/repo`, **Save**
+**AI enhancement with provider queue** — configure multiple providers; IntakePad tries them in priority order and falls back automatically. Local models, free tiers, and cloud providers are supported.
 
-> Auth is PAT-based (not OAuth). Because IntakePad is a static site with no backend, a PAT is the simplest token the browser can use to call the GitHub REST API directly.
+**Review before anything ships** — the review bar shows what the AI changed, what is missing, and which provider handled the draft. Undo restores the original text in one click.
 
-### 2. AI enhancement (optional)
-
-1. Settings → **AI enhancement**
-2. Enable providers you want to use. Local presets (Ollama, LM Studio) are enabled by default — they work on your machine with no API key.
-3. For cloud providers (Anthropic, OpenAI, OpenRouter, Groq): fill in the API key.
-4. Drag or use ↑/↓ buttons to reorder by priority.
-5. Use **Health check** per provider to verify the endpoint is reachable and CORS allows browser use.
-6. **Save**
-
-> The queue tries each enabled provider in order. If one fails (timeout, rate limit, CORS error, etc.), the next provider is tried automatically.
+**Local drafts** — autosaved per repository and template, restored on return.
 
 ### Default provider order
 
@@ -76,66 +73,62 @@ Everything is configured in **Settings** (top-right). Nothing is required to bro
 | 5 | OpenRouter | cloud | Yes | Free tier models available |
 | 6 | Groq | cloud | Yes | Free tier available |
 
----
-
-## Provider queue: how it works
-
-When you click **Enhance**, IntakePad:
+### Provider fallback policy
 
 1. Walks your enabled providers in order.
 2. Tries the first one with your input.
-3. If it succeeds → applies the result and records which provider was used.
-4. If it fails with a **retryable error** (timeout, rate limit, CORS/network failure, empty response, bad JSON, transient 5xx) → tries the next provider.
-5. If it fails with a **fatal error** (401/403, unsupported shape) → stops immediately with a clear message.
-6. If all providers fail → preserves the original draft and shows a summary of the last error.
+3. On success, applies the result and records which provider was used.
+4. On a **retryable error** (timeout, rate limit, CORS/network failure, empty response, bad JSON, transient 5xx), tries the next provider.
+5. On a **fatal error** (401/403, unsupported shape), stops immediately with a clear message.
+6. If all providers fail, preserves the original draft and shows a summary of the last error.
 
-The successful provider name is shown in the review bar so you know which backend handled your draft.
-
----
-
-## Browser CORS limits for local providers
+### Browser CORS limits for local providers
 
 AI providers are called directly from your browser (no backend). This means:
 
-- **Local endpoints** (localhost) must have **CORS enabled**. Ollama and LM Studio both require configuration to allow browser requests:
-  - **Ollama**: set `OLLAMA_ORIGINS=*` or `OLLAMA_ORIGINS=https://tinydarkforge.github.io` environment variable.
-  - **LM Studio**: enable CORS in Settings → Local Server → CORS.
+- **Local endpoints** (localhost) must have **CORS enabled**. Ollama requires `OLLAMA_ORIGINS=*` or `OLLAMA_ORIGINS=https://tinydarkforge.github.io`; LM Studio requires CORS enabled in Settings → Local Server → CORS.
 - **HTTPS pages** calling **HTTP localhost** may be blocked by mixed-content policies. On the GitHub Pages deployment, local providers must use `http://localhost` — which works in most modern browsers but may show a console warning.
-- **Cloud providers** listed in Settings have known CORS support. Custom OpenAI-compatible endpoints may not allow browser CORS — test with the Health check button.
+- **Cloud providers** listed in Settings have known CORS support. Custom OpenAI-compatible endpoints may not allow browser CORS — test them with **Health check**.
 
 ---
 
-## Security & privacy
+## Install
 
-**Read this before pasting a key.**
+### Hosted
 
-IntakePad has **no backend**. Your tokens, AI keys, and drafts are stored in your browser's **`localStorage`** and never touch a server we run.
+Open [tinydarkforge.github.io/IntakePad](https://tinydarkforge.github.io/IntakePad/). No install or account required.
 
-**Not public.** Other visitors to the site cannot see your data — `localStorage` is private to your browser and origin. Keys leave your browser only when *you* act: AI keys go directly to your chosen provider on **Enhance**; the GitHub PAT goes directly to GitHub on **Load / Create**. Nowhere else.
+### From source
 
-**But not a vault.** `localStorage` is **not encrypted or sandboxed** — any JavaScript running on the page can read it. That includes:
+```bash
+git clone https://github.com/tinydarkforge/IntakePad.git
+cd IntakePad
+npm ci
+npm run dev
+```
 
-- a malicious or compromised **browser extension**
-- a poisoned **npm dependency** in the app bundle (supply chain)
-- an **XSS** flaw, if one ever lands
-- anyone with access to **your machine / browser profile** (a shared or public computer)
+---
 
-**Use safely:**
+## Setup
 
-- Use a **scoped, low-limit, revocable** key — not your main full-access one.
-- Cap spend on the AI key; keep the PAT at `public_repo` only.
-- **Revoke** keys when you're done.
-- Don't enter keys on a shared or public machine.
+Everything is configured in **Settings** (top-right). Nothing is required to browse public-repo templates or use copy-only mode.
 
-**Privacy by provider choice:**
+### GitHub issues (optional)
 
-- **Local providers** (Ollama, LM Studio) keep all text on your machine. No data leaves your network.
-- **Cloud providers** (Anthropic, OpenAI, OpenRouter, Groq) receive pasted text directly from your browser. Check each provider's data usage policy.
-- Each provider gets its own API key, stored separately in `localStorage`.
+1. Settings → **Personal Access Token**
+2. Create a [classic PAT](https://github.com/settings/tokens/new?scopes=public_repo&description=IntakePad) with **`public_repo`** scope
+3. Paste it, set your `owner/repo`, **Save**
 
-The root cause of the key-storage tradeoff is the static-site model. A small server-side proxy would keep keys off the client and add rate limiting — tracked in [#15](https://github.com/tinydarkforge/IntakePad/issues/15). Until then, browser-stored BYO keys are the accepted tradeoff.
+> Auth is PAT-based (not OAuth). Because IntakePad is a static site with no backend, a PAT is the simplest token the browser can use to call the GitHub REST API directly.
 
-No data is sent anywhere except GitHub and your chosen AI providers. No analytics. No tracking.
+### AI enhancement (optional)
+
+1. Settings → **AI enhancement**
+2. Enable the providers you want. Local presets (Ollama, LM Studio) are enabled by default and work on your machine with no API key.
+3. For cloud providers (Anthropic, OpenAI, OpenRouter, Groq), fill in the API key.
+4. Drag or use ↑/↓ buttons to reorder by priority.
+5. Use **Health check** per provider to verify the endpoint is reachable and CORS allows browser use.
+6. **Save**
 
 ---
 
@@ -150,11 +143,44 @@ No data is sent anywhere except GitHub and your chosen AI providers. No analytic
 ### Keyboard shortcuts
 
 | Shortcut | Action |
-|---|---|
+|----------|--------|
 | `⌘/Ctrl + Enter` | Create issue |
 | `⌘/Ctrl + E` | Enhance |
 | `⌘/Ctrl + S` | Save draft |
 | `⌘/Ctrl + Shift + C` | Copy Markdown |
+
+---
+
+## Core capabilities
+
+- **Repo-native templates** — load `.github/ISSUE_TEMPLATE/` files from any public repository.
+- **AI provider queue** — ordered fallback across local and cloud providers.
+- **Review before submit** — change summary, missing information, provider attribution, and one-click undo.
+- **GitHub issue creation** — create the issue directly with a scoped PAT.
+- **Copy-only mode** — produce clean Markdown without a repository or token.
+- **Local drafts** — autosaved per repo and template in `localStorage`.
+- **Light / dark themes** — no flash on load.
+- **Markdown preview** — sanitized rendering with marked and DOMPurify.
+
+---
+
+## Prerequisites
+
+- **Node.js** — CI uses `22` for builds; `npm ci` requires a lockfile-compatible install.
+- **Modern browser** — `fetch`, `localStorage`, and the Clipboard API.
+- **GitHub PAT** — only needed to create issues; public templates and copy-only mode work without it.
+- **Local AI providers** — Ollama or LM Studio with browser CORS enabled (see above).
+
+No database, server, or background worker.
+
+---
+
+## Security
+
+- **No backend.** Tokens, AI keys, and drafts live in your browser's `localStorage`; no analytics or tracking.
+- **Keys leave the browser only when you act** — AI keys go to your chosen provider on **Enhance**, the GitHub PAT goes to GitHub on **Load / Create**.
+- **`localStorage` is not a vault** — it is unencrypted and readable by any JavaScript on the page, including extensions or a compromised dependency. Use scoped, revocable keys and avoid shared machines.
+- Reporting vulnerabilities: see [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -187,39 +213,39 @@ src/
     useNow.ts             — Ticking clock for live timestamps
 ```
 
----
-
-## Stack
-
 - **Next.js 16** — static export, App Router
 - **TypeScript**
 - **Tailwind CSS v4**
-- **GitHub REST API** (v3) — direct from the browser
+- **GitHub REST API** — direct from the browser
 - **marked + DOMPurify** — Markdown preview
 - **localStorage** — drafts, settings, tokens, per-provider API keys
-
-No database. No server. No background workers. Zero operational cost.
 
 ---
 
 ## Deploy
 
-Pushing to `main` runs the GitHub Actions workflow in `.github/workflows/` that builds the static export and publishes to GitHub Pages. `next.config.ts` sets `output: "export"`, `basePath: "/IntakePad"`, and `trailingSlash: true`.
+Pushing to `main` runs the GitHub Actions workflow in `.github/workflows/deploy.yml`, which builds the static export and publishes `out/` to GitHub Pages. `next.config.ts` sets `output: "export"`, `basePath: "/IntakePad"` in production, and `trailingSlash: true`.
 
 ---
 
 ## Roadmap
 
 | Phase | What | Status |
-|---|---|---|
-| M0 | Layout, templates, editor, autosave, copy | ✅ Done |
-| M1 | Real GitHub template loading | ✅ Done |
-| M2 | Real issue creation via API | ✅ Done |
-| M3 | AI enhancement with provider queue, fallback, health checks | ✅ Done |
-| M4 | Hardening — tests, rate/size limits, polish | ⏳ Planned ([#6](https://github.com/tinydarkforge/IntakePad/issues/6)) |
+|-------|------|--------|
+| M0 | Layout, templates, editor, autosave, copy | ✅ Done ([#2](https://github.com/tinydarkforge/IntakePad/issues/2)) |
+| M1 | Real GitHub template loading | ✅ Done ([#3](https://github.com/tinydarkforge/IntakePad/issues/3)) |
+| M2 | Real issue creation via API | ✅ Done ([#4](https://github.com/tinydarkforge/IntakePad/issues/4)) |
+| M3 | AI enhancement with provider queue, fallback, health checks | ✅ Done ([#14](https://github.com/tinydarkforge/IntakePad/issues/14), [#17](https://github.com/tinydarkforge/IntakePad/issues/17)) |
+| M4 | Hardening — errors, limits, tests, polish | ✅ Done ([#6](https://github.com/tinydarkforge/IntakePad/issues/6)) |
+
+A server-side AI proxy was evaluated in [#15](https://github.com/tinydarkforge/IntakePad/issues/15) and deferred: it would replace the pure GitHub Pages deploy. Browser-stored BYO keys remain the accepted tradeoff.
 
 ---
 
-<div align="center">
-<sub>Messy notes in. Clean GitHub issue out.</sub>
-</div>
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+<p align="center"><a href="https://tinydarkforge.github.io/IntakePad/">Live demo</a> · <a href="https://github.com/tinydarkforge/IntakePad">GitHub</a> · <a href="mailto:daniel.oceno@gmail.com">Contact</a></p>

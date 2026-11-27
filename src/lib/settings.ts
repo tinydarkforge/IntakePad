@@ -183,6 +183,7 @@ export function loadSettings(): Settings {
 export function saveSettings(settings: Settings) {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+    window.dispatchEvent(new Event("intakepad-settings"))
   } catch {}
 }
 
@@ -210,5 +211,6 @@ export function addRecentRepo(repo: string) {
     const existing = loadRecentRepos().filter((r) => r !== repo)
     const next = [repo, ...existing].slice(0, 5)
     localStorage.setItem(RECENTS_KEY, JSON.stringify(next))
+    window.dispatchEvent(new Event("intakepad-recents"))
   } catch {}
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { TemplateList } from "./TemplateList"
 import { IssueEditor } from "./IssueEditor"
@@ -17,24 +17,62 @@ interface LoadingState {
 }
 
 export function AppShell() {
-  const [repo, setRepo] = useState(() => typeof window === "undefined" ? "" : loadSettings().repo)
+  const savedRepo = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener("intakepad-settings", callback)
+      window.addEventListener("storage", callback)
+      return () => {
+        window.removeEventListener("intakepad-settings", callback)
+        window.removeEventListener("storage", callback)
+      }
+    },
+    () => loadSettings().repo,
+    () => "",
+  )
+  const [repoOverride, setRepoOverride] = useState<string | null>(null)
+  const repo = repoOverride ?? savedRepo
   const [templates, setTemplates] = useState<Template[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [loadingState, setLoadingState] = useState<LoadingState>({ type: "ready" })
   const [editRepo, setEditRepo] = useState(false)
-  const [repoInput, setRepoInput] = useState(() => typeof window === "undefined" ? "" : loadSettings().repo)
+  const [repoInputOverride, setRepoInputOverride] = useState<string | null>(null)
+  const repoInput = repoInputOverride ?? savedRepo
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [bladeOpen, setBladeOpen] = useState(false)
-  const [authed, setAuthed] = useState(() => typeof window !== "undefined" && isAuthenticated())
+  const authed = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener("intakepad-auth", callback)
+      window.addEventListener("storage", callback)
+      return () => {
+        window.removeEventListener("intakepad-auth", callback)
+        window.removeEventListener("storage", callback)
+      }
+    },
+    isAuthenticated,
+    () => false,
+  )
   const [forceEditor, setForceEditor] = useState(false)
   const [copyOnly, setCopyOnly] = useState(false)
   const [loadedAt, setLoadedAt] = useState<number | null>(null)
-  const [recents, setRecents] = useState<string[]>(() => typeof window === "undefined" ? [] : loadRecentRepos())
+  const recentsSnapshot = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener("intakepad-recents", callback)
+      window.addEventListener("storage", callback)
+      return () => {
+        window.removeEventListener("intakepad-recents", callback)
+        window.removeEventListener("storage", callback)
+      }
+    },
+    () => JSON.stringify(loadRecentRepos()),
+    () => "[]",
+  )
+  const recents = JSON.parse(recentsSnapshot) as string[]
 
   useEffect(() => {
     const refresh = () => {
-      setRecents(loadRecentRepos())
-      setAuthed(isAuthenticated())
+      window.dispatchEvent(new Event("intakepad-settings"))
+      window.dispatchEvent(new Event("intakepad-auth"))
+      window.dispatchEvent(new Event("intakepad-recents"))
     }
     window.addEventListener("focus", refresh)
     return () => window.removeEventListener("focus", refresh)
@@ -46,7 +84,7 @@ export function AppShell() {
 
     setCopyOnly(false)
     setForceEditor(false)
-    setRepo(ownerRepo)
+    setRepoOverride(ownerRepo)
     setLoadingState({ type: "loading" })
     setSelectedTemplate(null)
 
@@ -55,7 +93,6 @@ export function AppShell() {
       setTemplates(result)
       setLoadedAt(Date.now())
       addRecentRepo(ownerRepo)
-      setRecents(loadRecentRepos())
       if (result.length === 0) {
         setLoadingState({ type: "empty", message: "No issue templates found in this repository." })
       } else {
@@ -91,7 +128,7 @@ export function AppShell() {
   }
 
   const pickRecent = (r: string) => {
-    setRepoInput(r)
+    setRepoInputOverride(r)
     const current = loadSettings()
     saveSettings({ ...current, repo: r })
     handleLoadRepo(r)
@@ -107,8 +144,6 @@ export function AppShell() {
     setSelectedTemplate(null)
     setForceEditor(true)
   }, [])
-
-  const handleAuthChange = () => setAuthed(isAuthenticated())
 
   const hasRepo = repo.length > 0
   const showEditor = copyOnly || (hasRepo && (forceEditor || loadingState.type === "ready"))
@@ -127,7 +162,7 @@ export function AppShell() {
               <input
                 type="text"
                 value={repoInput}
-                onChange={(e) => setRepoInput(e.target.value)}
+                onChange={(e) => setRepoInputOverride(e.target.value)}
                 onBlur={() => setTimeout(() => setEditRepo(false), 150)}
                 placeholder="owner/repo"
                 className="text-xs px-3 py-1.5 bg-panel border border-border rounded-md outline-none focus:border-accent w-48 transition-all"
@@ -155,7 +190,7 @@ export function AppShell() {
             </form>
           ) : hasRepo ? (
             <button
-              onClick={() => { setEditRepo(true); setRepoInput(repo) }}
+              onClick={() => { setEditRepo(true); setRepoInputOverride(repo) }}
               className="flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-text transition-colors"
             >
               {repo}
@@ -180,7 +215,7 @@ export function AppShell() {
               Exit copy-only
             </button>
           )}
-          <AuthButton onAuthChange={handleAuthChange} />
+          <AuthButton />
         </div>
       </header>
 

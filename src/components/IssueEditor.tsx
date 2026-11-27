@@ -73,20 +73,33 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const snapshot = useRef<{ title: string; body: string } | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-const now = useNow()
+  const pendingSave = useRef(false)
+  const latestDraft = useRef({ title, body })
+  const now = useNow()
 
-const handleSave = useCallback(() => {
+  const handleSave = useCallback(() => {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = null
+    pendingSave.current = false
     saveDraft(repo, template?.id ?? null, title, body)
     setLastSaved(Date.now())
   }, [repo, template?.id, title, body])
 
   useEffect(() => {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
+    latestDraft.current = { title, body }
+    pendingSave.current = true
     saveTimer.current = setTimeout(handleSave, 800)
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
     }
   }, [title, body, handleSave])
+
+  useEffect(() => () => {
+    if (pendingSave.current) {
+      const draft = latestDraft.current
+      saveDraft(repo, template?.id ?? null, draft.title, draft.body)
+    }
+  }, [repo, template?.id])
 
   const handleCopy = useCallback(async () => {
     const content = buildContent(title, body)

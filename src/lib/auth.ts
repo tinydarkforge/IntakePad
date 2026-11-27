@@ -47,12 +47,14 @@ export function getToken(): string | null {
 export function setToken(token: string) {
   try {
     localStorage.setItem(AUTH_KEY, token)
+    window.dispatchEvent(new Event("intakepad-auth"))
   } catch {}
 }
 
 export function clearToken() {
   try {
     localStorage.removeItem(AUTH_KEY)
+    window.dispatchEvent(new Event("intakepad-auth"))
   } catch {}
 }
 

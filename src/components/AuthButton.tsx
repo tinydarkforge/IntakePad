@@ -1,20 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import { isAuthenticated, clearToken } from "@/lib/auth"
 
-interface AuthButtonProps {
-  onAuthChange: () => void
-}
-
-export function AuthButton({ onAuthChange }: AuthButtonProps) {
-  const [authed, setAuthed] = useState(() => typeof window !== "undefined" && isAuthenticated())
+export function AuthButton() {
+  const authed = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener("intakepad-auth", callback)
+      window.addEventListener("storage", callback)
+      return () => {
+        window.removeEventListener("intakepad-auth", callback)
+        window.removeEventListener("storage", callback)
+      }
+    },
+    isAuthenticated,
+    () => false,
+  )
 
   const handleDisconnect = () => {
     clearToken()
-    setAuthed(false)
-    onAuthChange()
   }
 
   if (authed) {

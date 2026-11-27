@@ -1,22 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { getThemePref, setThemePref, resolveTheme, type ThemePref } from "@/lib/theme"
 
 export function ThemeToggle() {
-  const [pref, setPref] = useState<ThemePref>("system")
-  const [mounted, setMounted] = useState(false)
+  const pref = useSyncExternalStore(
+    (callback) => {
+      window.addEventListener("storage", callback)
+      window.addEventListener("intakepad-theme", callback)
+      return () => {
+        window.removeEventListener("storage", callback)
+        window.removeEventListener("intakepad-theme", callback)
+      }
+    },
+    getThemePref,
+    () => "system" as ThemePref,
+  )
 
-  useEffect(() => {
-    setPref(getThemePref())
-    setMounted(true)
-  }, [])
-
-  const resolved = mounted ? resolveTheme(pref) : "light"
+  const resolved = resolveTheme(pref)
 
   const toggle = () => {
     const next: ThemePref = resolved === "dark" ? "light" : "dark"
-    setPref(next)
     setThemePref(next)
   }
 
@@ -27,7 +31,7 @@ export function ThemeToggle() {
       aria-label={`Switch to ${resolved === "dark" ? "light" : "dark"} theme`}
       title={`Theme: ${pref}`}
     >
-      {mounted && resolved === "dark" ? <SunIcon /> : <MoonIcon />}
+      {resolved === "dark" ? <SunIcon /> : <MoonIcon />}
     </button>
   )
 }

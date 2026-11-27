@@ -18,29 +18,24 @@ import { healthCheck, type HealthCheckResult } from "@/lib/ai"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 export default function SettingsPage() {
-  const [repo, setRepo] = useState("")
-  const [providers, setProviders] = useState<AiProvider[]>([])
-  const [pat, setPat] = useState("")
-  const [providerKeys, setProviderKeys] = useState<Record<string, string>>({})
+  const [initialSettings] = useState(() => typeof window === "undefined" ? { repo: "", aiProviders: [] as AiProvider[] } : loadSettings())
+  const [repo, setRepo] = useState(initialSettings.repo)
+  const [providers, setProviders] = useState<AiProvider[]>(initialSettings.aiProviders)
+  const [pat, setPat] = useState(() => typeof window === "undefined" ? "" : getToken() ?? "")
+  const [providerKeys, setProviderKeys] = useState<Record<string, string>>(() => {
+    if (typeof window === "undefined") return {}
+    const keys: Record<string, string> = {}
+    for (const provider of initialSettings.aiProviders) {
+      const key = getProviderKey(provider.id)
+      if (key) keys[provider.id] = key
+    }
+    return keys
+  })
   const [saved, setSaved] = useState(false)
   const [showPresets, setShowPresets] = useState(false)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [healthChecks, setHealthChecks] = useState<Record<string, "loading" | HealthCheckResult>>({})
   const presetsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const s = loadSettings()
-    setRepo(s.repo)
-    setProviders(s.aiProviders)
-    setPat(getToken() ?? "")
-
-    const keys: Record<string, string> = {}
-    for (const p of s.aiProviders) {
-      const k = getProviderKey(p.id)
-      if (k) keys[p.id] = k
-    }
-    setProviderKeys(keys)
-  }, [])
 
   useEffect(() => {
     const close = (e: MouseEvent) => {

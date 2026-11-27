@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import Link from "next/link"
 import { copyToClipboard, formatTimeAgo } from "@/lib/markdown"
 import { saveDraft, loadDraft, removeDraft } from "@/lib/storage"
@@ -27,6 +27,27 @@ interface IssueEditorProps {
 
 type AiState = "off" | "setup" | "ready"
 
+function subscribeAiState(callback: () => void) {
+  window.addEventListener("focus", callback)
+  window.addEventListener("storage", callback)
+  return () => {
+    window.removeEventListener("focus", callback)
+    window.removeEventListener("storage", callback)
+  }
+}
+
+function getAiStateSnapshot(): AiState {
+  const s = loadSettings()
+  const enabled = s.aiProviders.some((p) => p.enabled)
+  if (!enabled) return "off"
+  const anyReady = s.aiProviders.some((p) => {
+    if (!p.enabled || !p.model.trim()) return false
+    if (p.shape === "anthropic") return !!getProviderKey(p.id)
+    return true
+  })
+  return anyReady ? "ready" : "setup"
+}
+
 interface Review {
   missingInfo: string[]
   changeSummary: string[]
@@ -34,9 +55,10 @@ interface Review {
 }
 
 export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueEditorProps) {
-  const [title, setTitle] = useState("")
-  const [body, setBody] = useState("")
-  const [lastSaved, setLastSaved] = useState<number | null>(null)
+  const [initialDraft] = useState(() => loadDraft(repo, template?.id ?? null))
+  const [title, setTitle] = useState(initialDraft?.title ?? "")
+  const [body, setBody] = useState(initialDraft?.body ?? template?.body ?? "")
+  const [lastSaved, setLastSaved] = useState<number | null>(initialDraft?.updatedAt ?? null)
   const [copied, setCopied] = useState(false)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -45,55 +67,15 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
   const [enhancing, setEnhancing] = useState(false)
   const [enhanceError, setEnhanceError] = useState<string | null>(null)
   const [review, setReview] = useState<Review | null>(null)
-  const [aiState, setAiState] = useState<AiState>("off")
+  const aiState = useSyncExternalStore(subscribeAiState, getAiStateSnapshot, () => "off")
+  const templateLabels = useMemo(() => template?.labels ?? [], [template])
   const [uploadingImages, setUploadingImages] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const snapshot = useRef<{ title: string; body: string } | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const now = useNow()
+const now = useNow()
 
-  const currentKey = `${repo}:${template?.id ?? "blank"}`
-
-  const refreshAiState = useCallback(() => {
-    const s = loadSettings()
-    const enabled = s.aiProviders.some((p) => p.enabled)
-    if (!enabled) setAiState("off")
-    else {
-      const anyReady = s.aiProviders.some((p) => {
-        if (!p.enabled || !p.model.trim()) return false
-        if (p.shape === "anthropic") return !!getProviderKey(p.id)
-        return true
-      })
-      setAiState(anyReady ? "ready" : "setup")
-    }
-  }, [])
-
-  useEffect(() => {
-    refreshAiState()
-    window.addEventListener("focus", refreshAiState)
-    return () => window.removeEventListener("focus", refreshAiState)
-  }, [refreshAiState])
-
-  useEffect(() => {
-    const draft = loadDraft(repo, template?.id ?? null)
-    if (draft) {
-      setTitle(draft.title)
-      setBody(draft.body)
-      setLastSaved(draft.updatedAt)
-    } else {
-      setTitle("")
-      setBody(template?.body ?? "")
-      setLastSaved(null)
-    }
-    setCreated(null)
-    setError(null)
-    setReview(null)
-    setEnhanceError(null)
-    snapshot.current = null
-    setView("edit")
-  }, [currentKey, template?.body, repo, template?.id])
-
-  const handleSave = useCallback(() => {
+const handleSave = useCallback(() => {
     saveDraft(repo, template?.id ?? null, title, body)
     setLastSaved(Date.now())
   }, [repo, template?.id, title, body])
@@ -130,24 +112,21 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
     setCreating(true)
     const parts = repo.split("/")
     try {
-      const result = await createIssue(parts[0], parts[1], title, body, template?.labels ?? [])
+      const result = await createIssue(parts[0], parts[1], title, body, templateLabels)
       setCreated({ number: result.number, url: result.html_url })
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create issue")
     } finally {
       setCreating(false)
     }
-  }, [title, body, authed, creating, copyOnly, repo, template?.labels])
+  }, [title, body, authed, creating, copyOnly, repo, templateLabels])
 
   const handleEnhance = useCallback(async () => {
     if (enhancing || !body.trim()) return
     const s = loadSettings()
 
     const enabledProviders = s.aiProviders.filter((p) => p.enabled)
-    if (enabledProviders.length === 0) {
-      refreshAiState()
-      return
-    }
+    if (enabledProviders.length === 0) return
 
     const providersWithKeys: QueueProvider[] = enabledProviders.map((p) => ({
       id: p.id,
@@ -176,7 +155,7 @@ export function IssueEditor({ template, repo, authed, copyOnly = false }: IssueE
     } finally {
       setEnhancing(false)
     }
-  }, [enhancing, title, body, template, repo, refreshAiState])
+  }, [enhancing, title, body, template, repo])
 
   const handleUndo = useCallback(() => {
     if (!snapshot.current) return

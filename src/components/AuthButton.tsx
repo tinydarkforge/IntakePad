@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { isAuthenticated, clearToken } from "@/lib/auth"
 
@@ -9,11 +9,7 @@ interface AuthButtonProps {
 }
 
 export function AuthButton({ onAuthChange }: AuthButtonProps) {
-  const [authed, setAuthed] = useState(false)
-
-  useEffect(() => {
-    setAuthed(isAuthenticated())
-  }, [])
+  const [authed, setAuthed] = useState(() => typeof window !== "undefined" && isAuthenticated())
 
   const handleDisconnect = () => {
     clearToken()

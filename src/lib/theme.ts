@@ -31,6 +31,9 @@ export function setThemePref(pref: ThemePref) {
     localStorage.setItem(THEME_KEY, pref)
   } catch {}
   applyTheme(pref)
+  try {
+    window.dispatchEvent(new Event("intakepad-theme"))
+  } catch {}
 }
 
 /** Inline <head> script: set data-theme before first paint to avoid flash. */

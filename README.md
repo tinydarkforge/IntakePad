@@ -5,7 +5,7 @@
   <img alt="Next.js" src="https://img.shields.io/badge/next-16-10b981?style=flat-square&labelColor=18181b">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Browser-10b981?style=flat-square&labelColor=18181b">
   <img alt="Deploy" src="https://img.shields.io/badge/deploy-GitHub%20Pages-10b981?style=flat-square&labelColor=18181b">
-  <a href="https://github.com/tinydarkforge/IntakePad/actions/workflows/deploy.yml"><img alt="Deploy workflow" src="https://github.com/tinydarkforge/IntakePad/actions/workflows/deploy.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/tinydarkforge/IntakePad/actions/workflows/deploy.yml"><img alt="CI / deploy" src="https://github.com/tinydarkforge/IntakePad/actions/workflows/deploy.yml/badge.svg?branch=main"></a>
   <a href="https://tinydarkforge.github.io/IntakePad/"><img alt="Demo" src="https://img.shields.io/badge/demo-live-10b981?style=flat-square&labelColor=18181b"></a>
 </p>
 
@@ -32,6 +32,16 @@ flowchart LR
 
 No backend and no account. Settings, drafts, and keys stay in your browser's `localStorage`.
 
+**Who it's for** — maintainers, triagers, and developers who turn raw notes, logs, or Slack threads into GitHub issues and want the draft to follow the target repository's own templates. No server to run, no team account to provision, no keys stored outside your browser.
+
+### Why IntakePad
+
+| Instead of | IntakePad gives you |
+|------------|---------------------|
+| GitHub's web issue form | Paste messy notes, get a template-aware draft, and create the issue from the same screen. |
+| A generic AI chat | Repo templates, an ordered provider queue with fallback, and review + undo before anything is submitted. |
+| A hosted tool with a backend | A static site: tokens and drafts stay in your browser's `localStorage`, and copy-only mode needs no token at all. |
+
 ---
 
 ## Quick start
@@ -44,9 +54,12 @@ npm run dev
 Open http://localhost:3000, or use the [hosted app](https://tinydarkforge.github.io/IntakePad/).
 
 ```bash
-npm run build   # static export → ./out
+npm test        # node:test + TypeScript, no runtime dependencies added
 npm run lint
+npm run build   # static export → ./out
 ```
+
+Those three commands are the same gate CI runs before publishing.
 
 ---
 
@@ -166,7 +179,7 @@ Everything is configured in **Settings** (top-right). Nothing is required to bro
 
 ## Prerequisites
 
-- **Node.js** — CI uses `22` for builds; `npm ci` requires a lockfile-compatible install.
+- **Node.js 22** — the CI baseline for tests, lint, and the static export; `npm ci` requires the committed lockfile.
 - **Modern browser** — `fetch`, `localStorage`, and the Clipboard API.
 - **GitHub PAT** — only needed to create issues; public templates and copy-only mode work without it.
 - **Local AI providers** — Ollama or LM Studio with browser CORS enabled (see above).
@@ -211,7 +224,12 @@ src/
     theme.ts              — Theme preference + no-flash init script
     markdown.ts           — Clipboard, relative-time formatting
     useNow.ts             — Ticking clock for live timestamps
+tests/
+  *.test.ts               — node:test coverage for src/lib
+  env.ts                  — localStorage / window stubs
 ```
+
+Tests compile with the repo's existing TypeScript devDependency and run on Node's built-in test runner; no test framework is added to `package.json`.
 
 - **Next.js 16** — static export, App Router
 - **TypeScript**
@@ -224,7 +242,9 @@ src/
 
 ## Deploy
 
-Pushing to `main` runs the GitHub Actions workflow in `.github/workflows/deploy.yml`, which builds the static export and publishes `out/` to GitHub Pages. `next.config.ts` sets `output: "export"`, `basePath: "/IntakePad"` in production, and `trailingSlash: true`.
+Pushing to `main` runs the GitHub Actions workflow in `.github/workflows/deploy.yml`: `npm ci` → `npm test` → `npm run lint` → `npm run build` → publish `out/` to GitHub Pages. A failed gate blocks the deploy. `next.config.ts` sets `output: "export"`, `basePath: "/IntakePad"` in production, and `trailingSlash: true`.
+
+To deploy elsewhere, run `npm run build` and serve the contents of `out/` as static files.
 
 ---
 

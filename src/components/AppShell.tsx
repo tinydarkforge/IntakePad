@@ -17,26 +17,25 @@ interface LoadingState {
 }
 
 export function AppShell() {
-  const [repo, setRepo] = useState("")
+  const [repo, setRepo] = useState(() => typeof window === "undefined" ? "" : loadSettings().repo)
   const [templates, setTemplates] = useState<Template[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
   const [loadingState, setLoadingState] = useState<LoadingState>({ type: "ready" })
   const [editRepo, setEditRepo] = useState(false)
-  const [repoInput, setRepoInput] = useState("")
+  const [repoInput, setRepoInput] = useState(() => typeof window === "undefined" ? "" : loadSettings().repo)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [bladeOpen, setBladeOpen] = useState(false)
-  const [authed, setAuthed] = useState(false)
+  const [authed, setAuthed] = useState(() => typeof window !== "undefined" && isAuthenticated())
   const [forceEditor, setForceEditor] = useState(false)
   const [copyOnly, setCopyOnly] = useState(false)
   const [loadedAt, setLoadedAt] = useState<number | null>(null)
-  const [recents, setRecents] = useState<string[]>([])
+  const [recents, setRecents] = useState<string[]>(() => typeof window === "undefined" ? [] : loadRecentRepos())
 
   useEffect(() => {
     const refresh = () => {
       setRecents(loadRecentRepos())
       setAuthed(isAuthenticated())
     }
-    refresh()
     window.addEventListener("focus", refresh)
     return () => window.removeEventListener("focus", refresh)
   }, [])
@@ -74,10 +73,11 @@ export function AppShell() {
   // On mount (incl. returning from Settings), reload templates for the saved repo.
   useEffect(() => {
     const saved = loadSettings().repo
-    if (saved) {
-      setRepoInput(saved)
-      handleLoadRepo(saved)
-    }
+    if (!saved) return
+    const timer = window.setTimeout(() => {
+      void handleLoadRepo(saved)
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [handleLoadRepo])
 
   const handleRepoSubmit = (e: React.FormEvent) => {
@@ -243,6 +243,7 @@ export function AppShell() {
         <main className="flex-1 flex flex-col bg-panel overflow-hidden">
           {showEditor ? (
             <IssueEditor
+              key={`${copyOnly ? "copy" : repo}:${selectedTemplate?.id ?? "blank"}`}
               template={selectedTemplate}
               repo={copyOnly ? "" : repo}
               authed={authed}
